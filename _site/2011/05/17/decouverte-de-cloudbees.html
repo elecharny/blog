@@ -1,0 +1,1698 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Découverte de Cloudbees</title>
+  <meta name="description" content="J&#39;ai profité d&#39;un&amp;nbsp;passage en Suisse Romande pour assister à la réunion du 12 mai 2011 au JUG de Lausanne. Le sujet de la soirée était le plate-forme Clo...">
+
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="canonical" href="http://localhost:4000/2011/05/17/decouverte-de-cloudbees.html">
+  <link rel="alternate" type="application/rss+xml" title="Bojo Blog" href="/feed.xml">
+  
+  <link href='//agorbatchev.typepad.com/pub/sh/3_0_83/styles/shCore.css' rel='stylesheet' type='text/css'/>
+  <link href='//agorbatchev.typepad.com/pub/sh/3_0_83/styles/shThemeDefault.css' rel='stylesheet' type='text/css'/>
+  <script src='//agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shCore.js' type='text/javascript'>
+  </script>
+  <script type='text/javascript'>
+      SyntaxHighlighter.config.bloggerMode = true;
+      SyntaxHighlighter.all();
+  </script>
+  <script src='//agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shBrushJava.js' type='text/javascript'></script>
+  <script src='//agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shBrushXml.js' type='text/javascript'></script>
+  <script src='//agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shBrushBash.js' type='text/javascript'></script>
+  <script src='//agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shBrushPlain.js' type='text/javascript'></script>
+  <script src='//agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shBrushCss.js' type='text/javascript'></script>
+  <script src='//agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shBrushJScript.js' type='text/javascript'></script>
+  <script src='//agorbatchev.typepad.com/pub/sh/3_0_83/scripts/shBrushSql.js' type='text/javascript'></script>
+  <!-- Fin SyntaxHighlighter -->
+  <link href='https://3.bp.blogspot.com/-aGq-r77Jt6k/VmFk7hwb8OI/AAAAAAAAGVE/tjtfdjogXO0/s1600/favicon.ico' rel='icon' type='image/vnd.microsoft.icon'/>
+  <style>
+        code {
+          font-size: 85%;
+        }
+        .syntaxhighlighter {
+          font-size: 75% !important;
+        }
+  </style>
+  
+  
+</head>
+
+
+  <body>
+
+    <header class="site-header" role="banner">
+
+  <div class="wrapper">
+    
+    
+    <div><h1><a class="site-title" href="/">Bojo Blog</a></h1></div>
+    <div><a class="site-subtitle" href="/">Dev &amp; Ops en Beaujolais</a></div>
+
+    
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+              <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+              <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger">
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+        </div>
+      </nav>
+    
+  </div>
+</header>
+
+
+    <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">Découverte de Cloudbees</h1>
+    <p class="post-meta">
+      <time datetime="2011-05-17T01:09:00+02:00" itemprop="datePublished">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+17 mai 2011
+
+      </time>
+      
+        • <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Alexis Hassler</span></span>
+      </p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    J'ai profité d'un&nbsp;passage en Suisse Romande pour assister à la réunion du 12 mai 2011 au <a href="http://www.jugl.ch/">JUG de Lausanne</a>. Le sujet de la soirée était le plate-forme <a href="http://www.cloudbees.com/">CloudBees</a>, présentée par son fondateur,&nbsp;<a href="http://cloudbees.com/company-team.cb">Sacha Labourey</a>. Et bien que j'aie raté le début de la présentation, je dois dire que j'ai été convaincu par la pertinence de l'offre et par la vision de Sacha sur les services dans le nuage à apporter aux développeurs. J'ai donc fait un essai pour mieux comprendre le contenu de l'offre.<br /><br /><div class="separator" style="clear: both; text-align: center;"><a href="http://static-www.cloudbees.com/images/cloudbees_logo.png" imageanchor="1" style="margin-left: 1em; margin-right: 1em;"><img border="0" src="http://static-www.cloudbees.com/images/cloudbees_logo.png" /></a></div><br /><br />Ce billet retranscrit mon ressenti suite à la présentation et à mes premiers essais.&nbsp;Pour une vision plus large des solutions de développement dans le nuage, je vous renverrais vers le&nbsp;<a href="http://blog.kalistick.com/fr/tools/development-on-cloud-overview/">très bon article de Kalistic</a>&nbsp;sur le sujet.<br /><br /><!--more--><br /><br /><h3>CloudBees : la société et l'offre</h3><br />Pour ceux qui n'ont pas suivi l'épopée de JBoss, Sacha en était le CTO et responsable Europe. Il est resté CTO de JBoss après le rachat par RedHat, puis, en 2009, a quitté pour créer CloudBees un an après.<br /><br />La société CloudBees est composée d'une vingtaine de personnes, avec un recrutement haut de gamme, avec pas mal d'anciens de JBoss et de Sun, dont&nbsp;<a href="http://www.kohsuke.org/">Kohsuke Kawaguchi</a>, le créateur de Hudson / Jenkins.<br /><br />L'offre de CloudBees est constituée de deux parties :<br /><ul><li>pour les développeurs, DEV@cloud fournit <strike>Hudson</strike> Jenkins dans le cloud, avec des repositories Maven et de code source, git ou svn ;</li><li>pour le déploiement, RUN@cloud fournit un tomcat dans le cloud, avec une base de données MySQL.</li></ul><h3>DEV@cloud</h3><br />La première offre mise en ligne par CloudBees était DEV@cloud. L'idée derrière cette offre est de fournir un service de build et d'intégration en ligne, autour de Jenkins.<br /><br />Une fois enregistré, CloudBees nous fournit un accès à un Jenkins dans lequel on configure nos projets de façon standard. La seule différence, c'est que les builds sont envoyés sur des machines virtuelles instanciées dans le nuage, plus précisément sur Amazon AWS.&nbsp;Le repository du projet peut être hébergé sur Cloudbees, avec Subversion ou Git, ou à distance, sur GitHub par exemple. Les artefacts peuvent aussi être installés dans un repositoy Maven sur Cloudbees.<br /><br />Tout ça est disponible par quelques clics, sans aucun effort d'installation. Il suffit de quelques minutes lancer un projet.<br /><br />DEV@cloud s'intègre aussi sur le poste de travail du développeur, avec&nbsp;un plugin pour Eclipse qui permet de suivre et piloter les builds directement son IDE. Aucune intégration n'est proposée pour Netbeans ou IntelliJ, mais comme le kit utilisé est open source, la porte reste ouverte aux amateurs.<br /><br /><h3>Build du tutoriel</h3><br />Pour tester le service, j'ai réutilisé le projet que j'avais réalisé pour le tutoriel JSF - Spring - Hibernate, pour lequel j'avais déjà mis à disposition une version <i>mavenisée</i>, sur GitHub.<br /><br />J'ai donc créé un nouveau projet dans Jenkins, déclaré mon référentiel de code GitHub et configuré la version de Maven.&nbsp;Le premier build a été un échec... Cet échec n'est pas dû à CloudBees, mais à une mauvaise conception de mes tests qui ne sont pas vraiment unitaires et qui requièrent un connexion à une base de données.&nbsp;Pour faire passer mon build, je désactive mes tests. Je sais que ce n'est pas bien, mais si les tests sont pourris...<br /><br /><pre class="brush:bash">mvn clean install -Dmaven.test.skip=true</pre><br />Première victoire : mon build passe. Je peux même déployer mon artefact sur mon référentiel privé fourni par Cloudbees.<br /><br />Après cette réussite trop facile, je vais revoir mes ambitions à la hausse et m'attaquer à RUN@cloud.<br /><br /><h3>RUN@cloud</h3><br />Cette partie de l'offre de CloudBees permet de déployer une application sur un serveur Tomcat 6, avec une&nbsp;base de données MySQL 5.&nbsp;Là encore, il n'y a aucun effort d'installation à fournir. En contrepartie, la configuration est figée.<br /><br />L'accès à la base de données depuis l'application est géré par une datasource dont la configuration est faite dans un fichier spécifique à CloudBees (WEB-INF/cloudbees-web.xml). Pour l'administration de la base, il n'y a pas grand chose en ligne ; par contre, cette base est accessible à distance ce qui permet d'utiliser les outils classiques depuis le poste de travail.&nbsp;Il est aussi possible de brancher une application sur une base de données distante.<br /><br />Pour le déploiement, on peut le commander depuis DEV@cloud, avec maven. On peut aussi le commander à distance, avec Maven ou le SDK.<br /><br /><h3>Déploiement du tutoriel</h3><br />Pour le déploiement de mon application, j'ai donc modifié la commande du build.<br /><br /><pre class="brush:bash" style="margin: 0px;">mvn bees:deploy -Dmaven.test.skip=true -Dbees.apikey=... -Dbees.secret=... -Dbees.appid=sewatech/tutjsh</pre><br />J'ai aussi ajouté le fichier WEB-INF/cloudbees-web.xml :<br /><br /><pre class="brush:xml">&lt;cloudbees-web-app xmlns="http://www.cloudbees.com/xml/webapp/1"&gt;<br />    &lt;appid&gt;sewatech/tutjsh&lt;/appid&gt;<br />    &lt;resource auth="Container"&nbsp;<br />              name="jdbc/sw-uni"&nbsp;<br />              type="javax.sql.DataSource"&gt;<br />        &lt;param name="username" value="sewatech" /&gt;<br />        &lt;param name="password" value="pwd" /&gt;<br />        &lt;param name="url" value="jdbc:cloudbees://sw-uni" /&gt;<br />    &lt;/resource&gt;<br />&lt;/cloudbees-web-app&gt;<br /></pre><br />Ça fonctionne, mais ça me gène quand même d'avoir mon mot de passe en clair dans un fichier de configuration inclus dans le code source du projet. Surtout pour une base de données accessible à distance.<br /><br />Et pour être tout à fait honnête, j'ai dû faire quelques corrections dans mon application, car celle-ci tournait sous Tomcat 5.5 qui est plus laxiste que Tomcat 6.0. Ces corrections sont effectivement liées à la version de Tomcat et pas au fait de déployer sur CloudBees.<br /><br />La mise en ligne de mon application a été&nbsp;presque&nbsp;aussi simple que son build ; juste quelques lignes de documentation à lire. Cette simplicité ne sera peut-être plus aussi flagrante avec une application réelle car dans ce cas, on se confrontera peut-être aux contraintes du cloud.<br /><br /><h3>Combien ça coute ?</h3><br />C'est gratuit pour commencer, avec des capacités limitées : 2Go de stockage, 300 minutes de build par mois et quelques autres limitation. Pour passer aux choses sérieuses, les souscriptions vont de $15 à $100 par mois. Tous ces chiffres sont valables au moment de la rédaction du billet (05/2011) et peuvent évidemment évoluer.<br /><br /><h3>Pour qui ?</h3><br /><span style="font-weight: bold;">Pour moi !</span> Ou n'importe quel prestataire de service qui ne veut pas s'embêter avec un infrastructure. Pour chaque nouveau projet, quelques clics suffisent pour avoir un Jenkins opérationnel, avec un déploiement accessible par le client. Ensuite, le modèle peut être affiné : faut-il ouvrir un compte par client, par projet ? Faut-il tout mutualiser sur le même compte ? Comme souvent avec ce type de service, ça ouvre des perspectives qu'il faut affiner avec de la pratique.<br /><br />On peut aussi penser au éditeurs en mode SaaS. La formule peut être intéressante pour lancer un nouveau produit en réduisant les coûts fixes.<br /><br />Finalement, ça concerne n'importe quelle entreprise qui veut arrêter de s'embêter avec de l'infrastructure.<br /><br /><h3>La suite</h3><br />Le concept est en place, le nombre d'utilisateurs augmente, la société recrute régulièrement, et que des <i>cadors</i>. La concurrence aussi se mets en place, dans les différents créneaux du PaaS. Ce qu'on attend maintenant de CloudBees, c'est plus de fonctionnalités.<br /><br />Le premier ajout qui me plairait, c'est le support de JavaEE 6, en particulier du Web Profile. Comme il semblerait que cette demande soit assez répandue, ça devrait arriver prochainement.<br /><br />Les incidents récentes chez Amazon ont mis en évidences les limites du cloud. Un fournisseur de PaaS comme CloudBees a la possibilité d'amortir l'effet de grosses pannes en diversifiant ses fournisseurs IaaS et en permettant de déployer de façon transparente sur plusieurs plateformes. Ça aussi, ça semble être dans les plans.<br /><br />Enfin, pour toucher les entreprises plus grosses et les projets plus importants, CloudBees devra améliorer le passage entre DEV@cloud et RUN@cloud. La simple opération bees:deploy devra intégrer un workflow, avec une gestion des autorisations affinée.
+  </div>
+
+  
+  
+</article>
+
+
+      </div>
+
+      <div class="sidebar">
+        <div>
+          <h3>Alexis Hassler</h3>
+          <div>J'ai créé la société Sewatech en 2005, pour y exercer mon métier de conseil et de formation en informatique. Je suis spécialisé dans les technologies Java (développement et administration de serveurs d'applications).
+</div>
+        </div>
+        <div class="post-navigation">
+          <h2>Archives</h2>
+          
+<ul class="treeview">
+    
+    
+    
+    
+
+        
+        
+
+        
+            
+            <li> <input type="checkbox" id="cb-2017"  />
+                <label for="cb-2017">2017</label>
+                <ul class="year">
+            
+        
+
+        
+            
+            <li> <input type="checkbox" id="cb-201708"  />
+                <label for="cb-201708">08</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/jekyll/update/2017/08/21/welcome-to-jekyll.html">Welcome to Jekyll!</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201705"  />
+                <label for="cb-201705">05</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2017/05/18/vertx-debug.html">Vert.X : "Don’t block the event loop", même en debug ?</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201701"  />
+                <label for="cb-201701">01</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2017/01/04/le-jour-apres-macbook.html">Le jour d'après MacBook</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+            
+                </ul></li></ul></li><!-- year -->
+            
+            <li> <input type="checkbox" id="cb-2016"  />
+                <label for="cb-2016">2016</label>
+                <ul class="year">
+            
+        
+
+        
+            
+            <li> <input type="checkbox" id="cb-201612"  />
+                <label for="cb-201612">12</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2016/12/09/macbook-cest-fini.html">MacBook, c'est fini</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201602"  />
+                <label for="cb-201602">02</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2016/02/09/wildfly-managment-autorisations-ldap.html">Gérer les droits d'accès des administrateurs WildFly avec un annuaire LDAP</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2016/02/01/wildfly-managment-authentification-ldap.html">Utiliser un annuaire LDAP pour l'authentification des administrateurs WildFly</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+            
+                </ul></li></ul></li><!-- year -->
+            
+            <li> <input type="checkbox" id="cb-2015"  />
+                <label for="cb-2015">2015</label>
+                <ul class="year">
+            
+        
+
+        
+            
+            <li> <input type="checkbox" id="cb-201510"  />
+                <label for="cb-201510">10</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2015/10/26/tomcat-realm-digest.html">Authentification Digest et chiffrement des mots de passe, avec Tomcat Realm</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2015/10/12/docker-machine-sur-macos.html">Adieu boot2docker, bonjour docker-machine</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2015/10/06/spring-boot-digest.html">Authentification Digest et chiffrement des mots de passe, avec Spring Security</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201509"  />
+                <label for="cb-201509">09</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2015/09/30/completablefuture.html">Découverte de CompletableFuture</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201506"  />
+                <label for="cb-201506">06</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2015/06/29/ouvrir-jmx-remote-chaud.html">Comment ouvrir les ports JMX remote à chaud</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201503"  />
+                <label for="cb-201503">03</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2015/03/19/ci-travis-docker.html">Intégration continue avec Travis CI et Docker Hub</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2015/03/15/putain-10-ans.html">Putain, 10 ans !</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201501"  />
+                <label for="cb-201501">01</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2015/01/07/charlie-hebdo.html">Charlie Hebdo</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2015/01/01/bilan-2014-du-blog.html">Bilan 2014 du blog</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+            
+                </ul></li></ul></li><!-- year -->
+            
+            <li> <input type="checkbox" id="cb-2014"  />
+                <label for="cb-2014">2014</label>
+                <ul class="year">
+            
+        
+
+        
+            
+            <li> <input type="checkbox" id="cb-201412"  />
+                <label for="cb-201412">12</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2014/12/31/installer-openvpn-sur-google-cloud.html">Comment installer OpenVPN sur Google Cloud</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201410"  />
+                <label for="cb-201410">10</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2014/10/13/tomcat-chiffrer-les-mots-de-passe.html">Comment chiffrer les mots de passe de Tomcat</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2014/10/09/resteasy-standalone.html">Démarrer RESTEasy en mode standalone</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201408"  />
+                <label for="cb-201408">08</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2014/08/25/taille-images-docker.html">Réduire la taille des images Docker</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2014/08/22/image-docker-pour-wildfly.html">Construire une image Docker pour WildFly</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2014/08/21/image-docker-pour-modcluster.html">Construire une image Docker pour Apache / mod_cluster</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2014/08/20/compiler-modcluster-pour-apache24.html">Compiler mod_cluster pour Apache 2.4 : pourquoi et comment ?</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2014/08/19/interview-wildfly-par-arun-gupta.html">Mon interview sur ma formation WildFly, par Arun Gupta</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2014/08/18/cluster-wildfly-avec-docker.html">Installer un cluster WildFly avec Docker</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201407"  />
+                <label for="cb-201407">07</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2014/07/29/wildfly-8-administration-guide-le-livre.html">WildFly 8, administration guide : le livre</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201404"  />
+                <label for="cb-201404">04</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2014/04/23/devoxx-france-2014-bofs-et-cotes.html">Devoxx France 2014 : BOFs et à-cotés</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2014/04/22/devoxx-france-2014-conferences.html">Devoxx France 2014 : Conférences</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2014/04/21/devoxx-france-2014-keynotes.html">Devoxx France 2014 : Keynotes</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2014/04/20/devoxx-france-2014-universites-et.html">Devoxx France 2014 : Universités et Ateliers</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2014/04/19/pub-windev.html">Pub WinDev : mon mail de réponse</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+            
+                </ul></li></ul></li><!-- year -->
+            
+            <li> <input type="checkbox" id="cb-2013"  />
+                <label for="cb-2013">2013</label>
+                <ul class="year">
+            
+        
+
+        
+            
+            <li> <input type="checkbox" id="cb-201312"  />
+                <label for="cb-201312">12</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2013/12/08/devoxx-2013-retour-sur-la-deuxieme.html">Devoxx 2013 : retour sur la deuxième partie</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201311"  />
+                <label for="cb-201311">11</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2013/11/17/devoxx-2013-retour-sur-les-2-premiers.html">Devoxx 2013 : retour sur les 2 premiers jours</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201310"  />
+                <label for="cb-201310">10</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2013/10/13/formation-jboss.html">Formation JBoss : attention aux contrefaçons</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201307"  />
+                <label for="cb-201307">07</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2013/07/11/generer-kml.html">Générer un document KML pour Google Maps</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2013/07/09/du-sig-google-maps.html">Du SIG à Google Maps</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201306"  />
+                <label for="cb-201306">06</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2013/06/23/authentification-wildfly-avec-opendj.html">Authentification WildFly avec OpenDJ</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201301"  />
+                <label for="cb-201301">01</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2013/01/16/jboss-eap-est-il-open-source.html">JBoss EAP est-il Open Source ?</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+            
+                </ul></li></ul></li><!-- year -->
+            
+            <li> <input type="checkbox" id="cb-2012"  />
+                <label for="cb-2012">2012</label>
+                <ul class="year">
+            
+        
+
+        
+            
+            <li> <input type="checkbox" id="cb-201212"  />
+                <label for="cb-201212">12</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2012/12/14/parentheses-et-logback.html">Attention aux parenthèses dans Logback</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2012/12/01/acceder-la-console-de-jboss-as-7-via.html">Accéder à la console de JBoss AS 7 via Apache Web Server</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201209"  />
+                <label for="cb-201209">09</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2012/09/11/jboss-eap-6-et-les-bonnes-nouvelles.html">JBoss EAP 6 et les bonnes nouvelles</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2012/09/08/build-de-jboss-as-7.html">Construire soi-même JBoss AS 7 (ou WildFly)</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201204"  />
+                <label for="cb-201204">04</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2012/04/13/developpeurs-jsf-fuyez-managedbean.html">Développeurs JSF, fuyez @ManagedBean</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2012/04/07/tester-des-beans-en-scope-conversation.html">Tester des beans en scope Conversation avec Arquillian</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201203"  />
+                <label for="cb-201203">03</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2012/03/25/jbossas-7-remote.html">Accéder aux composants remote de JBossAS 7</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201201"  />
+                <label for="cb-201201">01</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2012/01/24/presentation-arquillian.html">Présentation Arquillian</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+            
+                </ul></li></ul></li><!-- year -->
+            
+            <li> <input type="checkbox" id="cb-2011" checked />
+                <label for="cb-2011">2011</label>
+                <ul class="year">
+            
+        
+
+        
+            
+            <li> <input type="checkbox" id="cb-201112"  />
+                <label for="cb-201112">12</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2011/12/29/javaee-via-lapi-cloudbees.html">Déployer une application JavaEE via l'API Cloudbees</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201110"  />
+                <label for="cb-201110">10</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2011/10/10/les-sorties-de-lete-2011.html">Les sorties de l'été 2011</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201108"  />
+                <label for="cb-201108">08</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2011/08/18/versions-mineures-de-jboss-as.html">Versions mineures de JBoss AS</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201106"  />
+                <label for="cb-201106">06</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2011/06/24/injection-de-logger-avec-spring.html">Injection de logger avec Spring</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2011/06/21/injection-de-logger-avec-cdi.html">Injection de logger avec CDI</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201105" checked />
+                <label for="cb-201105">05</label>
+                <ul class="month">
+        
+
+        <li class="active">
+            <a href="/2011/05/17/decouverte-de-cloudbees.html">Découverte de Cloudbees</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201102"  />
+                <label for="cb-201102">02</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2011/02/24/mots-de-passe-chiffres-pour-les.html">Mots de passe chiffrés pour les datasources de JBoss</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201101"  />
+                <label for="cb-201101">01</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2011/01/30/junit-runner-pour-cdi-weld.html">JUnit Runner pour CDI / Weld</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2011/01/29/junit-rule-pour-cdi-weld.html">JUnit Rule pour CDI / Weld</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2011/01/17/jugs-en-france.html">Carte des JUGs en France</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+            
+                </ul></li></ul></li><!-- year -->
+            
+            <li> <input type="checkbox" id="cb-2010"  />
+                <label for="cb-2010">2010</label>
+                <ul class="year">
+            
+        
+
+        
+            
+            <li> <input type="checkbox" id="cb-201011"  />
+                <label for="cb-201011">11</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2010/11/22/dao-ou-pas-dao.html">DAO ou pas DAO ?</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201010"  />
+                <label for="cb-201010">10</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2010/10/27/devoxx-schedule-dans-google-calendar.html">Devoxx Schedule dans Google Calendar</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2010/10/11/environnement-de-developpement-javaee-6.html">Environnement de développement JavaEE 6</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2010/10/10/tutoriel-jsf-spring-et-hibernate.html">Tutoriel JSF, Spring et Hibernate</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201008"  />
+                <label for="cb-201008">08</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2010/08/20/systeme-invite-64bits-avec-virtualbox.html">VirtualBox 64bits sous MacOS X</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2010/08/10/premiers-pas-avec-git-et-github.html">Premiers pas avec Git et GitHub</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201004"  />
+                <label for="cb-201004">04</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2010/04/30/deploiement-de-silverpeas-sur-jonas.html">Déploiement de Silverpeas sur JOnAS</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2010/04/08/slf4j-et-jcl-sous-jonas-5.html">SLF4J et JCL sous Jonas 5</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2010/04/01/tests-unitaires-gae.html">Tests unitaires pour Google App Engine</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201003"  />
+                <label for="cb-201003">03</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2010/03/31/jrebel-avec-openjdk-et-grizzly.html">JRebel avec OpenJDK et Grizzly</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201002"  />
+                <label for="cb-201002">02</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2010/02/15/silverpeas-sur-jboss-5.html">Silverpeas sur JBoss 5</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2010/02/11/installation-de-silverpeas.html">Installation de Silverpeas</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2010/02/11/script-de-creation-de-machine-virutelle.html">Script de création de machine virutelle VirtualBox</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2010/02/09/la-persistance-dans-google-app-engine.html">Persistance dans Google App Engine : JDO, JPA ou ... ?</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2010/02/08/environnement-de-developpement-pour-gae.html">Environnement de développement pour GAE</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+            
+                </ul><!-- month --></li>
+            
+            <li> <input type="checkbox" id="cb-201001"  />
+                <label for="cb-201001">01</label>
+                <ul class="month">
+        
+
+        <li class="">
+            <a href="/2010/01/30/mon-projet-gae.html">Mon projet GAE</a>
+        </li>
+
+        
+        
+        
+    
+
+        
+        
+
+        
+
+        
+
+        <li class="">
+            <a href="/2010/01/29/demarrage-du-blog.html">Démarrage du blog</a>
+        </li>
+
+        
+        
+        
+    
+</ul><!-- global -->
+
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

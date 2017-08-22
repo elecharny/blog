@@ -1,0 +1,27 @@
+.treeview
+{
+  margin-left: 0;
+  ul {
+    margin-left: 20px;
+  }
+  input {
+    display: none;
+  }
+  input ~ ul {
+   display: none;
+  }
+  input:checked ~ ul {
+   display: block;
+  }
+  input ~ label::before {
+    content: "► ";
+  }
+  input:checked ~ label::before {
+    content: "▼ ";
+  }
+  /* habillage */
+  li {
+    display: block;
+    padding: 0.1em;
+  }
+}
