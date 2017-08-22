@@ -19,7 +19,7 @@ email: bojb@sewatech.fr
 description:  > # this means to ignore newlines until "baseurl:"
     J'ai créé la société Sewatech en 2005, pour y exercer mon métier de conseil et de formation en informatique. Je suis spécialisé dans les technologies Java (développement et administration de serveurs d'applications).
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "https://blog.alexis-hassler.com/" # the base hostname & protocol for your site, e.g. http://example.com
+url: "https://hasalex.github.io/" # "https://blog.alexis-hassler.com/" # the base hostname & protocol for your site, e.g. http://example.com
 author: Alexis Hassler
 twitter_username: AlexisHassler
 github_username:  hasalex
