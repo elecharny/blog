@@ -14,3 +14,4 @@ deploy:
   local_dir: _site
   repo: alexis-hassler/alexis-hassler.github.io
   target_branch: master
+  fqdn: blog.alexis-hassler.com
