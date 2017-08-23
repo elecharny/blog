@@ -38,6 +38,12 @@ excerpt_separator: <!--more-->
 
 paginate: 5
 
+links:
+  - title: "JTips, mon wiki"
+    url: "https://jtips.info"
+  - title: "Sewatech, mon entreprise"
+    url: "https://sewatech.fr"
+
 # Exclude from processing.
 # The following items will not be processed, by default. Create a custom list
 # to override the default setting.
