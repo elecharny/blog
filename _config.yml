@@ -30,6 +30,7 @@ theme: minima
 plugins:
   - jekyll-feed
   - jekyll-paginate
+  - jekyll-asciidoc
 
 encoding: UTF-8
 lang: fr
