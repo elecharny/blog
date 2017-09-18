@@ -1,0 +1,191 @@
+---
+layout: post
+title: Comment faire du CORS avec Tomcat ?
+author: Alexis Hassler
+tags: 
+---
+
+Avec la mode des _single page applications_, il est devenu courant de faire du *CORS*.
+On met le front-end et le back-end dans des projets séparés et on les teste dans des runtimes séparés.
+
+Pour mon projet actuel, le back-end est en Spring MVC 4 qu'on déploie dans Tomcat et le front-end est en Angular 4 qu'on exécute avec `ng serve`.
+
+Dans ces conditions, le navigateur charge l'application sur http://localhost:4200 et les données sur http://localhost:8080.
+Le navigateur devra refuser ces dernières si le serveur n'a pas explicitement autorisé leur exploitation depuis une autre _origin_.
+
+[%inline]
+image::assets/cors.svg[]
+
+Si vous cherchez une explication plus sérieuse, je vous suggère une visite de https://developer.mozilla.org/fr/docs/HTTP/Access_control_CORS[MDN].
+
+Nous avons ce fonctionnement en développement. 
+Pour la prod, on conserve la liberté de tout fusionner dans un war, de déployer dans deux war sur le même Tomcat ou de déployer le front-end sur un Apache ou un nginx à part.
+
+Peu importe pour l'instant, voyons comment faire fonctionner notre environnement de développement. 
+Et comme c'est expliqué dans l'article de MDN, c'est juste une histoire de headers.
+
+<!--more-->
+
+== CORS avec Spring
+
+Avec *Spring MVC*, comme souvent, il suffit d'ajouter la bonne annotation au bon endroit.
+C'est sympa les annotations, ça a un coté magique.
+
+Si vous lisez ce https://spring.io/blog/2015/06/08/cors-support-in-spring-framework[billet du blog de Spring], vous verrez qu'en plus de *@CrossOrigin*, vous pourrez opter pour JavaConfig pour une configuration plus globale.
+
+== CORS dans Tomcat
+
+Tomcat supporte directement CORS, avec un _servlet filter_. 
+
+[.step1%inline]
+image::assets/tomcat-valve.svg[]
+
+Pas besoin d'annotation ici, par contre on ajoute quelques lignes dans web.xml (non ce n'est pas dégradant de faire de l'XML).
+
+[source,xml]
+----
+<filter>
+  <filter-name>CorsFilter</filter-name>
+  <filter-class>org.apache.catalina.filters.CorsFilter</filter-class>
+</filter>
+<filter-mapping>
+  <filter-name>CorsFilter</filter-name>
+  <url-pattern>/*</url-pattern>
+</filter-mapping>
+----
+
+Comme souvent avec Tomcat, tous les détails sont dans la https://tomcat.apache.org/tomcat-8.5-doc/config/filter.html#CORS_Filter[doc de référence].
+
+Cette fonctionnalité est arrivée dans Tomcat 7, nais avec un update assez tardif. 
+Elle n'est pas dans JBoss EAP 6 alors qu'il intègre un fork de Tomcat 7.0.
+
+== Angular
+
+Il n'y a rien de plus à faire coté client.
+Le navigateur se charge de la mécanique CORS, en envoyant les _preflight requests_ et en ajoutant les bons _headers_ avec la requête.
+
+[source,typescript]
+----
+return this.http.post('http://localhost:8080/article', body, options)
+                .map(response => response.json())
+                .catch(this.handleError);
+----
+
+== Ça marche, mais pas comlètement
+
+Bref, c'est simple de faire du CORS. A un détail prêt…
+
+Les deux solutions décrites sont intégrées dans l'application, elles fonctionne pour toutes les réponses produites par l'application elle-même.
+Mais le client peut recevoir une réponse produite par le serveur d'application.
+En cas d'exception non gérée par exemple, c'est le serveur d'applications qui envoie l'erreur 500.
+Il en est de même si on confie l'authentification et les autorisations au serveur d'application.
+
+[.step2%inline]
+image::assets/tomcat-valve.svg[]
+
+Si la réponse n'a pas les bons headers, le client va la rejeter directement, sans l'analyser.
+Il ne pourra donc pas réagir de façon pertinente.
+
+Dans l'exemple Angular ci-dessus, en cas d'erreur d'authentification (401), handleError verra ceci :
+
+[source,json]
+----
+  { 
+      ok: false, 
+      status: 0, 
+      statusText: "", 
+      url: null,
+      …
+  } 
+----
+
+On est d'accord que c'est pas très explicite.
+
+== Avec une valve
+
+Si certaines réponses sont produites à l'extérieur de l'application, les headers CORS doivent aussi être ajoutés à l'extérieur.
+
+La solution pourrait être un Apache ou nginx frontal.
+Mais ça me semble un peu lourd pour un environnement de développement.
+
+A mon avis, une solution interne à Tomcat serait meilleure.
+Et un valve serait certainement adaptée.
+
+Une valve fonctionne comme un filter, mais est spécifique à Tomcat.
+Et développer sa propre valve est simple :
+
+[source,java]
+----
+public class CorsHeadersValve extends ValveBase {
+    @Override
+    public void invoke(Request request, Response response) 
+            throws IOException, ServletException {
+        next.invoke(request, response);
+ 
+        response.setHeader("Access-Control-Allow-Origin", "http://localhost:4200");
+        ...
+    }
+}
+----
+
+On peut la configurer au niveau global dans server.xml ou au niveau d'une application dans context.xml.
+
+[source,xml]
+----
+<Valve className="fr.sewatech.example.CorsHeadersValve" />
+----
+
+On peut aussi utiliser des valves plus configurables, comme https://github.com/Sewatech/swutils/blob/master/tc-utils/src/main/java/fr/sewatech/tcutils/headers/HttpResponseHeaderValve.java[HttpResponseHeaderValve de swutils].
+Il faut déclarer une valve par header.
+
+[source,xml]
+----
+<Valve className="fr.sewatech.tcutils.headers.HttpResponseHeaderValve"
+       headerName="Access-Control-Allow-Origin"
+       headerValue="http://localhost:4200"
+       force="true" />
+----
+
+Enfin, et c'est peut-être la meilleure solution, on peut intégrer une [valve qui réutilise CorsFilter](https://github.com/Sewatech/swutils/blob/master/tc-utils/src/main/java/fr/sewatech/tcutils/headers/CorsValve.java).
+
+
+[.step3%inline]
+image::assets/tomcat-valve.svg[]
+
+== Et dans JBoss / WildFly ?
+
+Par JBoss, j'entends évidemment JBoss EAP.
+Il n'y a plus aucune raison d'utiliser JBoss AS en 2017.
+
+Comme JBoss EAP intègre un fork de Tomcat, les techniques décrites dans ce billet s'appliquent toutes.
+Ou presque.
+
+Pour ajouter une valve, il faut créer un module pour son fichier jar et la déclarer avec jboss-cli.
+
+[source]
+----
+/subsystem=web/valve=CorsOriginValve:add(                               \
+       module=fr.sewatech.tcutils,                                      \
+       class-name=fr.sewatech.tcutils.headers.HttpResponseHeaderValve)
+/subsystem=web/valve=CorsOriginValve:add-param(                         \
+       param-name=Access-Control-Allow-Origin,                          \
+       param-value="http://localhost:4200")
+----
+
+Comme je l'ai noté précédemment, le CorsFilter n'est pas dans JBoss EAP 6.
+Il n'est donc pas possible d'ajouter ma CorsValve.
+
+Pour WildFly / JBoss EAP 7, Tomcat a été remplacé par Undertow.
+La configuration sera snsiblement différente.
+J'en parlerai donc dans un autre billet.
+
+== Conclusion
+
+Les mauvaises langues diront qu,on a ici une preuve supplémentaire qu'il faut abandonner les serveurs d'applications et passer à Spring Boot ou Vert.x.
+Je ne les contrdirais pas, du moins ici.
+La réalité, c'est que beaucoup d'entreprises ont des serveurs d'applications, et pour quelques années encore.
+
+Il faut effectivement faire un effort supplémentaire pour gérer correctement CORS dans Tomcat, mais c'est quand même léger.
+
+Et en configurant CORS de façon externe à l'application, on fait un choix au moment de l'installation.
+
