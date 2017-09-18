@@ -24,7 +24,7 @@ Pour la prod, on conserve la liberté de tout fusionner dans un war, de déploye
 Peu importe pour l'instant, voyons comment faire fonctionner notre environnement de développement. 
 Et comme c'est expliqué dans l'article de MDN, c'est juste une histoire de headers.
 
-<!--more-->
+//<!--more-->
 
 == CORS avec Spring
 
