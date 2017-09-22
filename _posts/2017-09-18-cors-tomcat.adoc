@@ -189,3 +189,33 @@ Il faut effectivement faire un effort supplémentaire pour gérer correctement C
 
 Et en configurant CORS de façon externe à l'application, on fait un choix au moment de l'installation.
 
+== Post-conclusion [EDIT]
+
+Après la publication du billet, j'ai eu quelques réactions qui me proposent une solution plus simple, pour mon environnement de développement. 
+Elle part du principe que *pour ne pas avoir de problème avec CORS, il ne faut pas faire de CORS*.
+
+Dans le billet j'ai furtivement envisagé d'utiliser Apache ou nginx, en reverse-proxy.
+La solution du reverse-proxy peut adoptée sans outil tiers, directement dans la commande `ng` : 
+
+[source]
+----
+ng serve --proxy-config proxy.conf.json
+----
+
+Et le fichier proxy.conf.json, référencé dans la commande, configure webpack pour qu'il fonctionne en reverse proxy avec Tomcat :
+
+[source,json]
+----
+{
+    "/api": {
+        "target": "http://localhost:8080",
+        "secure": false,
+        "changeOrigin": true
+    }
+}
+----
+
+Voila, je ne préoccupe plus du port 8080. 
+Mes front-end et mon back-end sont accessible depuis le port 4200, servi par webpack.
+
+Merci à https://twitter.com/zepag/status/909792141068701698[Pierre-Antoine Grégoire] et https://twitter.com/bcourtine/status/909806881543278593[Benoit Courtine] pour leur suggestions.
