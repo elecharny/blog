@@ -91,19 +91,20 @@
   max-width: $content-width;
   margin-right: auto;
   margin-left: auto;
-  padding: $calc(#{$spacing-unit} / 2);
+  padding: calc(#{$spacing-unit} / 2);
   display: flex;
   flex-wrap: wrap;
 
   .wrapper {
-    flex: 2;
-    padding-right: 0;
+    flex-grow: 3;
+    flex-basis: 500px;
+    padding-right: 5px;
     padding-left: 0;
   }
 
   .sidebar {
-    flex: 1;
-    min-width: calc(#{$spacing-unit} * 6);
+    flex-grow: 1;
+    flex-basis: 200px;
     h2 {
       margin: 1.6em 0 .5em;
       padding: 4px 5px;

@@ -174,3 +174,9 @@ pre {
     padding-top: 5px;
   }
 }
+
+pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  word-break: break-all;
+}
