@@ -1,0 +1,78 @@
+---
+layout: post
+title: Adieu Powerpoint
+author: Alexis Hassler
+tags:
+- Slides
+- AsciiDoctor
+- OpenDevise
+- BespokeJS
+---
+
+J'ai remarqué que ces derniers temps, le contenu des articles populaires ne correspondaient pas à leur titre. J'ai donc fait pareil.
+Alors oui, cet article parle de *slides* et de *présentations*, mais pas de Powerpoint puisque je ne l'utilise plus depuis une quinzaine d'années. 
+
+=== Impress vs Powerpoint vs Keynote
+
+J'aurais pu l'utiliser puisque j’ai euun laptop sous MacOS X et il existe une version pour cet OS. 
+Par contre, je ne sais pas si elle est de bonne qualité, je n'ai jamais voulu essayer.
+
+Je n'ai jamais voulu essayer MS Powerpoint ou Apple Keynote parce qu'ils produisent des fichiers que je suis incapable d'utiliser sous Linux. 
+La portabilité des fichiers est un point fondamental. 
+Donc pour faire des slides sous MacOS / Linux, j'utilise *OpenOffice / LibreOffice Impress*.
+
+Ça n'a jamais été un logiciel extraordinaire, mais j'ai fait tous mes supports de cours avec. 
+J'ai souvent pesté contre l'outil, il m’a fait perdre du temps, mais tant qu'il faisait le boulot, je l'ai conservé. 
+Et puis que prendre à la place ?
+
+Cette année j'ai craqué. 
+Je n'en peux plus d'Impress : plantages, pertes de mise en forme, incompatibilité entre la version Linux et MacOS. 
+Je laisse tomber. 
+Mais que prendre à la place ?
+
+=== HTML
+
+Ce n'est pas la première fois que je me pose cette question. 
+On m'a conseillé les *slides HTML*. 
+J'avais déjà évalué plusieurs outils, puis abandonné, puis réessayé,... 
+A chaque fois, je trouvais que je perdais en fonctionnalités et que je devais un peu trop mettre les mains dans le *CSS*. 
+
+Les fonctionnalités que j'attendais sont :
+
+* rédaction facile (pas HTML),
+* slides auto-adaptable à la taille de l'écran,
+* export PDF avec les notes,
+* transitions dans un slide,
+* pilotable au clavier ou à la télécommande.
+* 
+
+=== BespokeJS
+
+Je ne vais pas énumérer les outils que j'ai évalués, mais juste dire que j'ai choisi BespokeJS et je ne vais pas le lâcher.
+
+Pour être honnête, je manque de recul pour avoir un avis tranché sur la question. 
+Comme souvent, pour ce type d'outils, le choix ne porte pas uniquement sur les fonctionnalités ou la qualité technique, mais aussi sur la pérennité et la confiance.
+
+Pour ça, j'ai juste regardé du coté d'http://opendevise.com/[OpenDevise]. 
+Des super speakers, un top niveau technique et surtout des gens bien++. 
+Si vous allez en conférence, vous avez certainement une de leurs speakers : https://twitter.com/carbonfray[Sarah White], https://twitter.com/mojavelinux[Dan Allen] ou https://twitter.com/hsablonniere[Hubert Sablonnière].
+
+J'ai observé leur façon de travailler, sur quels outils ils passaient du temps, et j'ai suivi.
+
+=== Asciidoctor
+
+Évidemment, si on parle d'http://opendevise.com/[OpenDevise], Asciidoctor ne sera pas bien loin. 
+Et effectivement, il est possible de rédiger une présentation en AsciiDoctor et de la générer en BespokeJS.
+
+Parfait ! 
+Ça ressemble pas mal à ce que je cherche.
+
+=== C'est parti
+
+Donc, voilà. 
+Mon choix est fait. 
+Je récupère le https://github.com/opendevise/presentation-bespoke-starter[template de projet] d'Open Devise, et je fais mes slides pour mes prochaines conférences.
+
+Bon, ça demande encore un peu d'adaptation... 
+Mais ça, j'en parlerai une prochaine fois.
+
