@@ -5,7 +5,7 @@ author: Alexis Hassler
 tags: 
 ---
 
-== De Blogger…
+=== De Blogger…
 
 J'ai démarré ce blog en 2010 sur Blogger.
 L'intérêt de la plateforme, c'était de pouvoir démarrer sans effort : rien à installer, rien à déployer et un minimum de configuration.
@@ -13,9 +13,9 @@ L'intérêt de la plateforme, c'était de pouvoir démarrer sans effort : rien �
 Le revers de la médaille, c'est que l'éditeur _WYSIWYG_ n'est pas très pratique pour un blog orienté développement, surtout pour les extraits de code.
 
 Ça faisait des mois que j'envisageais de changer de plateforme, mais comme tout travail non prioritaire, je reportais au lendemain.
-Cet été, j'ai enfin pris le temps de m'en occuper.
+L'été dernier, j'ai enfin pris le temps de m'en occuper.
 
-== … à Jekyll
+=== … à Jekyll
 
 Il existe pas mal d'alternatives à Blogger. 
 La plus populaire est certainement Wordpress.
@@ -25,14 +25,15 @@ Le principal intérêt, c'est pour le déploiement : un simple serveur Web, sans
 Parmi les générateur, il y a aussi pas mal de possibilités. 
 J'ai choisi de ne pas trop chercher.
 J'ai pris la une solution mainstream avec Jekyll.
-<!--more-->
+
+//<!--more-->
 
 Certes ce n'est pas très hype, mais ça fait le boulot.
 Et un gros écosysytème de plug-in permet de personnaliser le blog.
 
 On peut même déployer sur Github Pages.
 
-== Migration
+=== Migration
 
 En changeant de plateforme, je voulais conserver mes anciens billets, avec leurs URLs.
 Pour ça, Blogger a une fonction d'export grâce à laquelle j'ai pu récupérer mon historique dans un fichier XML.
@@ -42,7 +43,7 @@ Ensuite, j'ai mis les mains dans le système de template de Jekyll, en Liquid, e
 J'arrive à quelque chose qui ressemble à la version précédente.
 Je l'améliorerai quand j'aurai un peu de temps… dans quelques mois.
 
-== Hébergerment
+=== Hébergerment
 
 Comme je le soulignais plus haut, l'hébergerment est facile avec Jekyll :
 on génère les pages statiques, qu'on dépose sur un serveur web, et voilà.
@@ -58,7 +59,7 @@ C'est un peu plus compliqué et plus long, mais j'ai ma publication automatique.
 
 Au final, j'ai ajouté Cloudflare pour la gestion du domaine et du SSL.
 
-== Cassé
+=== Cassé
 
 Si vous lisez ce billet, c'est que ça marche !
 

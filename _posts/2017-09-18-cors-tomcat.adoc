@@ -26,14 +26,14 @@ Et comme c'est expliqué dans l'article de MDN, c'est juste une histoire de head
 
 //<!--more-->
 
-== CORS avec Spring
+=== CORS avec Spring
 
 Avec *Spring MVC*, comme souvent, il suffit d'ajouter la bonne annotation au bon endroit.
 C'est sympa les annotations, ça a un coté magique.
 
 Si vous lisez ce https://spring.io/blog/2015/06/08/cors-support-in-spring-framework[billet du blog de Spring], vous verrez qu'en plus de *@CrossOrigin*, vous pourrez opter pour JavaConfig pour une configuration plus globale.
 
-== CORS dans Tomcat
+=== CORS dans Tomcat
 
 Tomcat supporte directement CORS, avec un _servlet filter_. 
 
@@ -59,7 +59,7 @@ Comme souvent avec Tomcat, tous les détails sont dans la https://tomcat.apache.
 Cette fonctionnalité est arrivée dans Tomcat 7, nais avec un update assez tardif. 
 Elle n'est pas dans JBoss EAP 6 alors qu'il intègre un fork de Tomcat 7.0.
 
-== Angular
+=== Angular
 
 Il n'y a rien de plus à faire coté client.
 Le navigateur se charge de la mécanique CORS, en envoyant les _preflight requests_ et en ajoutant les bons _headers_ avec la requête.
@@ -71,7 +71,7 @@ return this.http.post('http://localhost:8080/article', body, options)
                 .catch(this.handleError);
 ----
 
-== Ça marche, mais pas comlètement
+=== Ça marche, mais pas comlètement
 
 Bref, c'est simple de faire du CORS. A un détail prêt…
 
@@ -101,7 +101,7 @@ Dans l'exemple Angular ci-dessus, en cas d'erreur d'authentification (401), hand
 
 On est d'accord que c'est pas très explicite.
 
-== Avec une valve
+=== Avec une valve
 
 Si certaines réponses sont produites à l'extérieur de l'application, les headers CORS doivent aussi être ajoutés à l'extérieur.
 
@@ -152,7 +152,7 @@ Enfin, et c'est peut-être la meilleure solution, on peut intégrer une [valve q
 [.step3%inline]
 image::assets/tomcat-valve.svg[]
 
-== Et dans JBoss / WildFly ?
+=== Et dans JBoss / WildFly ?
 
 Par JBoss, j'entends évidemment JBoss EAP.
 Il n'y a plus aucune raison d'utiliser JBoss AS en 2017.
@@ -179,7 +179,7 @@ Pour WildFly / JBoss EAP 7, Tomcat a été remplacé par Undertow.
 La configuration sera snsiblement différente.
 J'en parlerai donc dans un autre billet.
 
-== Conclusion
+=== Conclusion
 
 Les mauvaises langues diront qu,on a ici une preuve supplémentaire qu'il faut abandonner les serveurs d'applications et passer à Spring Boot ou Vert.x.
 Je ne les contrdirais pas, du moins ici.
@@ -189,7 +189,7 @@ Il faut effectivement faire un effort supplémentaire pour gérer correctement C
 
 Et en configurant CORS de façon externe à l'application, on fait un choix au moment de l'installation.
 
-== Post-conclusion [EDIT]
+=== Post-conclusion [EDIT]
 
 Après la publication du billet, j'ai eu quelques réactions qui me proposent une solution plus simple, pour mon environnement de développement. 
 Elle part du principe que *pour ne pas avoir de problème avec CORS, il ne faut pas faire de CORS*.
