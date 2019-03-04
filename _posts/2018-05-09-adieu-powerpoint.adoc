@@ -12,7 +12,7 @@ tags:
 J'ai remarqué que ces derniers temps, le contenu des articles populaires ne correspondaient pas à leur titre. J'ai donc fait pareil.
 Alors oui, cet article parle de *slides* et de *présentations*, mais pas de Powerpoint puisque je ne l'utilise plus depuis une quinzaine d'années. 
 
-=== Impress vs Powerpoint vs Keynote
+== Impress vs Powerpoint vs Keynote
 
 J'aurais pu l'utiliser puisque j’ai euun laptop sous MacOS X et il existe une version pour cet OS. 
 Par contre, je ne sais pas si elle est de bonne qualité, je n'ai jamais voulu essayer.
@@ -30,7 +30,9 @@ Je n'en peux plus d'Impress : plantages, pertes de mise en forme, incompatibilit
 Je laisse tomber. 
 Mais que prendre à la place ?
 
-=== HTML
+//<!--more-->
+
+== HTML
 
 Ce n'est pas la première fois que je me pose cette question. 
 On m'a conseillé les *slides HTML*. 
@@ -46,7 +48,7 @@ Les fonctionnalités que j'attendais sont :
 * pilotable au clavier ou à la télécommande.
 * 
 
-=== BespokeJS
+== BespokeJS
 
 Je ne vais pas énumérer les outils que j'ai évalués, mais juste dire que j'ai choisi BespokeJS et je ne vais pas le lâcher.
 
@@ -59,7 +61,7 @@ Si vous allez en conférence, vous avez certainement une de leurs speakers : htt
 
 J'ai observé leur façon de travailler, sur quels outils ils passaient du temps, et j'ai suivi.
 
-=== Asciidoctor
+== Asciidoctor
 
 Évidemment, si on parle d'http://opendevise.com/[OpenDevise], Asciidoctor ne sera pas bien loin. 
 Et effectivement, il est possible de rédiger une présentation en AsciiDoctor et de la générer en BespokeJS.
@@ -67,7 +69,7 @@ Et effectivement, il est possible de rédiger une présentation en AsciiDoctor e
 Parfait ! 
 Ça ressemble pas mal à ce que je cherche.
 
-=== C'est parti
+== C'est parti
 
 Donc, voilà. 
 Mon choix est fait. 
