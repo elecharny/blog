@@ -1,0 +1,186 @@
+---
+layout: post
+title: Comment utiliser Jekyll pour un wiki ?
+author: Alexis Hassler
+tags: wiki
+---
+[.right]
+image::/images/jekyllrb-logo.png[Jekyll,200]
+
+J'utilise *Jekyll* pour ce blog depuis plusieurs mois déjà (cf. link:/2018/02/23/migration.html[Migration du blog]).
+Ma motivation, c'était de quitter Blogger et reprendre ma liberté.
+
+Cette année, j'ai décidé d'utiliser link:https://jekyllrb.com/[Jekyll] pour faire un wiki, ou quelque chose qui y ressemble.
+A priori, ce n'est pas fait pour ça, mais en jouant un peu avec les templates, on peut arriver à un résultat correct.
+
+[.left]
+image::/images/mediawiki-logo.png[Jekyll,110]
+
+Mais *pourquoi* utiliser Jekyll alors qu'il y a des très bons moteurs de wiki libres ou open source ?
+Ça fait des années que j'utilise link:https://www.mediawiki.org/[MediaWiki] et ça marche très bien.
+Pour l'hébergement ça n'est pas très compliqué, on trouve des offres correctes et à bon marché incluant du PHP et une base de donnée MySQL.
+
+Ce qui m'embête, c'est que ça demande un minimum de *maintenance* : montée de version de PHP, du moteur de wiki, de la base de données.
+Jekyll, avec ses pages statiques, m'évitera ça.
+Et comme j'ai déjà fait connaissance avec lui, ça va me faciliter le travail.
+
+//<!--more-->
+
+Si vous n'avez pas envie de lire la suite, vous pouvez directement aller voir le résultat de mon travail sur link:là[https://jek4wik.github.io/].
+
+== Plan d'action
+
+Jekyll est surtout prévu pour des *blogs*, mais il peut aussi être utilisé tout autre site statique.
+On va donc oublier les posts et l'organisation par date pour faire de simple pages.
+
+Au niveau wiki, ma référence est MediaWiki, j'aimerais donc reproduire sa mise en forme et certaines de ses fonctionnalités.
+C'est dans cette optique que j'ai préparé mon plan d'action.
+
+[.center]
+image::/images/jtips-mediawiki.png[Layout,600]
+
+
+[.clear]
+* La première étape, c'est de préparer des *templates* qui reproduisent sa mise en forme.
+* Ensuite, il faut répertorier les méta-données qu'il faut consigner dans le *front matter*.
+* Enfin, on crée les pages spéciales, pour les auteurs ou les tags.
+
+Au niveau de l'organisation, on sépare les pages de wiki du reste avec des *collections*.
+
+== Collections
+
+Commençons par l'organisation des pages.
+Les pages statiques peuvent être placées directement à la racine du projet, 
+mais pour séparer les pages de wiki des pages spéciales, je préfère mettre en place des *collections*.footnote:collections[https://jekyllrb.com/docs/collections/]
+
+Plus précisément, je fais une collection `wiki` qui contient toutes les pages classiques et une collection `special` qui contient les pages de redirection, de description des auteurs et des tags (ou catégories).
+
+Les collections ont deux avantages. 
+Non seulement elle permettent de ranger les fichiers dans des répertoires, mais surtout elles peuvent être exploitées dans les templates.
+
+[source,liquid]
+----
+{% for page in site.wiki %}
+  ...
+{% endfor %}
+----
+
+Cette organisation va me simplifier la vie pour la mise en forme.
+
+== Front Matter
+
+Dans Jekyll, le *front matter* sert à ajouter des métadonnées à une page.footnote:front-matter[https://jekyllrb.com/docs/front-matter/]
+Ces métadonnées peuvent être sous forme d'attributs prédéfinis ou personnalisés et sont utilisables dans les templates.
+
+[source,liquid]
+----
+{% for link in page.links %}
+<li><a href="{{link.url}}">{{link.text}}</a></li>
+{% endfor %}
+----
+
+J'utilise les attributs standards suivants:
+
+* layout: tag
+* title: WildFly
+* tags: WildFly
+
+Et j'ajoute des attributs personnalisés:
+
+* toc: l'activation du sommaire pour la page
+* links: des liens externes associés à la page ; je l'utilise pour référencer des formations de mon catalogue en lien avec la page
+* author: l'auteur (principal) de la page ; théoriquement il peut y en avoir plusieurs, mais je ne l'ai pas prévu
+* created: date de création
+* modified: date de la dernière modification
+* revisions: liste des révisions, avec la date, l'auteur et éventuellement un commentaire
+
+Toutes ces informations sont ensuite exploitées dans les layouts.
+
+== Mise en forme
+
+La mise en forme est gérée dans des fichiers de *templates*. 
+J'ai donc commencé par un premier template qui reprend la mise en forme de MediaWiki.
+La principale différence est sur la colonne de gauche.
+Dans MediaWiki, elle sert pour les fonctionnalités spécifiques au Wiki qui n'existent plus.
+J'ai donc recyclé cette zone pour y mettre des informations qui sont habituellement dans la page elle-même : auteur, sommaire, tags.
+
+Pour le *sommaire*, j'utilise le plugin link:https://rubygems.org/gems/jekyll-toc/[jekyll-toc] en deux parties.
+
+Sur le contenu, pour indexer les titres :
+
+[source, subs="verbatim,quotes"]
+----
+{{ content | inject_anchors }}
+----
+
+Dans la zone du sommaire, pour l'affichage
+
+[source, subs="verbatim,quotes"]
+----
+{{ content | toc_only }}
+----
+
+Pour les *tags*, j'ai opté pour une solution maison, où je construis en Liquid la liste des tags et des pages associées 
+J'exploite cette liste pour la zone des tags de chaque page.
+
+Pour l'*auteur*, j'utilise des données enregistrées dans `_data/users.yml`.
+Chaque utilisateur a aussi une page dans `_special`.
+
+[source, yaml, subs="verbatim,quotes"]
+----
+Alexis:
+  name: Alexis Hassler
+  logo: image/sewatech.png
+----
+
+== Pages spéciales
+
+Maintenant que j'ai un _layout_ par défaut, je dois travailler sur les pages spéciales :
+
+* Redirection
+* Utilisateur
+* Tag
+
+Pour la page *utilisateur*, je réutilise tout simplement la page par défaut, sans informations dans la colonne de gauche.
+
+Pour les *redirections*, je fais une page avec une base _meta refresh_ dans le `head` de la page.
+
+[source, html, subs="verbatim,quotes"]
+----
+<meta http-equiv="refresh" content="0; url={{ include.redirect_url }}" />
+----
+
+Pour la page de *tag*, c'est un peu plus compliqué parce qu'il faut commencer par collecter la liste des pages associées au tag.
+
+[source, liquid, subs="verbatim,quotes"]
+----
+{% assign wiki_pages = '' | split: '' %}
+{% for collection in site.collections %}
+  {% assign prefix = collection.label | slice: 0, 4 %}
+  {% if prefix == 'wiki' %}
+	  {% assign wiki_pages = wiki_pages | concat: collection.docs %}
+  {% endif %}
+{% endfor %}
+----
+
+== Conclusion
+
+Pour vous donner une idée du résultat, voici la même page que ci-dessus, avec Jekyll :
+
+[.center]
+image::/images/jtips-jekyll.png[Layout,600]
+
+Il y a plein de choses à améliorer:
+
+* la mise en forme n'est absolument pas responsive,
+* le temps de génération des pages est trop long, certainement à cause de ma gestion des tags,
+* des fonctionnalités annexes, comme les listes de pages, doivent être complétées,
+* la mise en forme devrait être externalisée dans un thème,
+* l'affichage du code source doit être amélioré,
+* et tout ce à quoi je n'ai pas encore pensé,...
+
+Pour l'instant, ma priorité est de migrer mon link:https://www.jtips.info/[wiki] sous mediawiki sur ce template.
+Pour ça, je dois travailler sur le *script de migration*. 
+Et ça, je vous en parlerai dans un prochain billet.
+
+En attendant, n'hésitez pas à aller voir les link:https://jek4wik.github.io/[détails du template], link:https://github.com/jek4wik/jek4wik[clonez le repository] et utilisez-le. Après ça, si vous pouvez me donner votre avis, voire contribuer, je serais ravi.

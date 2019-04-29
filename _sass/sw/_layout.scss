@@ -195,18 +195,10 @@
   clear: both;
 }
 
-// @include media-query($on-mobile) {
-//   .page-content {
-//     flex-direction: column;
+.right {
+  float: right;
+}
 
-//     .wrapper {
-//       width: 100%;
-//       padding-right: 0;
-//       padding-left: 0;
-//     }
-  
-//     .sidebar {
-//       width: 100%;
-//     }
-//   }
-// }
+.left {
+  float: left;
+}
