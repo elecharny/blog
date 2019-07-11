@@ -1,9 +1,10 @@
 <header class="site-header" role="banner">
-
   <div class="wrapper">
-    {% assign default_paths = site.pages | map: "path" %}
-    {% assign page_paths = site.header_pages | default: default_paths %}
-    <div><h1><a class="site-title" href="{{ "/" | relative_url }}">{{ site.title | escape }}</a></h1></div>
-    <div><a class="site-subtitle" href="{{ "/" | relative_url }}">{{ site.subtitle | escape }}</a></div>
+    {% if page.content == '' %}
+      <div class="site-title"><h1><a href="{{ "/" | relative_url }}">{{ site.title | escape }}</a></h1></div>
+    {% else %}
+      <div class="site-title"><a href="{{ "/" | relative_url }}">{{ site.title | escape }}</a></div>
+    {% endif %}
+    <div class="site-subtitle"><a href="{{ "/" | relative_url }}">{{ site.subtitle | escape }}</a></div>
   </div>
 </header>
