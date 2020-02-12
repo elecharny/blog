@@ -4,6 +4,7 @@ title: Comment utiliser Jekyll pour un wiki ?
 author: Alexis Hassler
 tags: wiki
 ---
+
 [.right]
 image::/images/jekyllrb-logo.png[Jekyll,200]
 

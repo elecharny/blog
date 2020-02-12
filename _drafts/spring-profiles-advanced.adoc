@@ -1,0 +1,25 @@
+---
+layout: post
+title: Utilisation avancée des profils Spring
+author: Alexis Hassler
+tags: spring
+---
+
+=== meta-annotation
+
+Pour améliorer l'élégance de notre code, on peut aussi faire des méta-annotations.
+
+Dans l'exemple ci-dessous, on crée une annotation qui fusionne les notions de profil et de composant.
+Une classe annotée ainsi ne sera un bean que pour le profil test.
+
+[source,java]
+----
+@Target({ElementType.TYPE, ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Profile("test")
+@Component
+public @interface TestOnlyComponent {
+  @AliasFor(annotation = Component.class, attribute = "value")
+  String value() default "";
+}
+----

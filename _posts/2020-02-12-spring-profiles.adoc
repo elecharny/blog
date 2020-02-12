@@ -1,0 +1,304 @@
+---
+layout: post
+title: Petit guide d'utilisation des profils Spring
+author: Alexis Hassler
+tags: 
+- spring
+---
+
+[.right]
+image::/images/spring/profile-head.svg[profil,150]
+
+Un *profil*, dans Spring Framework, permet de regrouper des beans, puis de les activer ou désactiver et de les configurer par ensembles.
+Et si la notion profil fait partie de *Spring Core*, il y a aussi des spécificités pour *Spring Boot*.
+
+Par exemple, dans un profil test, on activera une datasource qui accède à une base de données embarquée alors qu'en profil prod, on accèdera à une base de données externe.
+
+Dans cet article, je vous propose de faire un petit récapitulatif des techniques pour *configurer les beans* en fonction du profil et pour *choisir les profils actifs*.
+
+//<!--more-->
+
+== Composer les profils
+
+On va commencer par voir comment configurer un profil.
+Comme je l'ai dit en introduction, un profil est un ensemble de beans, avec des éléments de configuration spécifiques.
+On va donc voir comment mettre en place ces deux aspects.
+
+[.center]
+image::/images/spring/bean-group.svg[Group of beans,200]
+
+Pour bien comprendre cette partie, il faut garder en tête que dans une application, plusieurs profils peuvent être activés conjointenment et qu'une application Spring est consituée des beans des profils choisi plus ceux qui ne sont rattachés à aucun profil.
+
+=== Beans d'un profil
+
+Pour associer un bean à un profil, on utilise l'annotation `@Profile`.
+
+[.left]
+image::/images/spring/bean-dev.svg[Bean in <dev> profile,120]
+
+[source,java,subs="verbatim,quotes"]
+----
+@Component
+*@Profile("dev")*
+public class SomeDevComponent implements SomeComponent {
+    ...
+}
+----
+
+Le composant ci-dessus ne sera donc actif que dans le profil `dev`.
+
+L'annotation `@Profile` peut aussi être utilisée sur une classe de confiuguration, au niveau de la classe elle-même ou au niveau d'une méthode annotée par `@Bean`.
+
+Pour ceux qui utilisent une description des beans par XML, l'équivalent est au niveau de l'élément `<beans>`.
+
+[.right]
+image::/images/spring/bean-dev.svg[Bean in <dev> profile,120]
+
+[source,xml,subs="verbatim,quotes"]
+----
+<beans *profile="dev"*>
+    <bean id="someComponent"
+          class="fr.sewatech.example.SomeDevComponent" />
+    ...
+</beans>
+----
+
+=== Profil par défaut
+
+Dans l'exemple précédent, on a associé le bean `SomeDevComponent` au profil `dev`.
+Ce bean sera donc candidat à l'injection dans une propriété de type `SomeComponent`.
+
+Pour que l'injection fonctionne dans le cas où aucun profil n'est activé, il faut prévoir ce cas avec le profil `default`.
+
+[.left]
+image::/images/spring/bean-default.svg[Bean in <default> profile,120]
+
+[source,java,subs="verbatim,quotes"]
+----
+@Component
+*@Profile("default")*
+public class SomeDefaultComponent implements SomeComponent {
+    ...
+}
+----
+
+=== Configuration spécifique au profil
+
+Spring Boot utilise des fichiers de configuration, application.yml (ou properties).
+
+Lorsqu'un profil est actif, Spring Boot charge un fichier 
+application-{profile}.yml (ou properties).
+
+C'est pratique pour y configurer l'accès à la base de données, les logs et d'autres informations spécifiques à un environnement.
+
+.*application-dev.yml*
+[source,yaml,subs="verbatim,quotes"]
+----
+spring:
+    datasource:
+        driver-class-name: org.h2.Driver
+        url: jdbc:h2:mem:db;DB_CLOSE_DELAY=-1
+        username: sa
+        password: sa
+----
+
+=== Environnement
+
+Enfin, on peut récupérer la liste des profils par du code, en injectant le bean `environment`.
+
+[source,java,subs="verbatim,quotes"]
+----
+@Component
+public class ProfileAccessor {
+
+    @Autowired Environment environment;
+
+    public String[] getActiveProfiles() {
+        return *environment.getActiveProfiles()*;
+    }
+
+    public boolean isProfileActive(String profile) {
+        return Stream.of(environment.getActiveProfiles())
+                     .anyMatch(activeProfile -> activeProfile.equals(profile));
+    }
+}
+----
+
+Ainsi, dans notre code, on pourra appliquer des règles spécifiques à certains profils.
+
+Certains sites proposent de récupérer la liste des profils actifs en injectant la valeur de la propriété spring.profiles.active.
+C'est une mauvaise idée car, comme on le verra un peu plus loin, des profils peuvent être activés par d'autres façons.
+
+[.left]
+image::/images/forbidden.svg[Forbidden,80]
+
+[source,java,subs="verbatim,quotes"]
+----
+// WRONG, don't do it
+@Value("${spring.profiles.active}")
+private String activeProfile;
+----
+
+== Activer des profils
+
+Maintenant que vous savez comment mettre des beans dans un profil, voyons la 2° partie du problème : où, quand et comment choisir ses profils.
+
+=== Par propriété
+
+La principale façon d'activer un profil, c'est de le renseigner dans la propriété spring.profiles.active.
+
+Ça peut se faire dans la commande de démarrage, avec une *propriété système*.
+
+[source,bash,subs="verbatim,quotes"]
+----
+java -jar *-Dspring.profiles.active=prod* app.jar
+----
+
+La même chose peut se faire dans la méthode de démarrage de l'application.
+
+[source,java,subs="verbatim,quotes"]
+----
+public static void main(String[] args) {
+    System.setProperty(
+        "spring.profiles.active", 
+        ProfilesConfiguration.PROFILE_A);
+    SpringApplication.run(MySpringApplication.class, args);
+}
+----
+
+Ça peut aussi se faire avec un *paramètre du programme*.
+
+[source,bash,subs="verbatim,quotes"]
+----
+java -jar app.jar *--spring.profiles.active=prod*
+----
+
+Avec Spring Boot, on peut aussi renseigner la propriété dans le fichier *application.yml*.
+
+[source,yml,subs="verbatim,quotes"]
+----
+spring:
+    profile:
+        *active: profile-a*
+----
+
+Comme les autres propriétés, la valeur passée à la commande de démarrage écrase celle du fichier de configuration.
+
+=== Profil additionnel
+
+Dans le code de démarrage de l'application (méthode `main(...)`), on peut ajouter des profils additionels.
+Comme leur nom l'indique, ils viendront en plus de ceux de la propriété.
+
+Ça se passe dans la méthode de démarrage de l'application.
+
+[source,language,subs="verbatim,quotes"]
+----
+public static void main(String[] args) {
+    new SpringApplicationBuilder()
+        .sources(SpringProfileApplication.class)
+        .*profiles("profile-a", "profile-b")*
+        .build()
+        .run(args);
+}
+----
+
+Cette technique est surtout pratique lorsqu'on utilise une librairie qui exploite les profils.
+
+C'est cette notion de profil additionnel qui induit une différence entre la propriété et l'environnement.
+
+=== Environnement configurable
+
+En parlant d'environnement, si on avait injecté un bean de type `*ConfigurableEnvironment*` ou `DefaultEnvironment` au lieu de `*Environment*`, on aurait eu en plus de la méthode `getActiveProfiles()`, des méthodes `addActiveProfile(...)` et `setActiveProfiles(...)` pour modifier les profils.
+
+[.center]
+image::/images/trap.gif["It's a trap",500]
+
+Ça fonctionne bien si on configure l'environnement avant le démarrage.
+
+[source,java,subs="verbatim,quotes"]
+----
+public static void main(String[] args) {
+    ConfigurableEnvironment environment = new StandardEnvironment();
+    *environment.setActiveProfiles("toto", "titi");*
+
+    new SpringApplicationBuilder()
+        .*environment(environment)*
+        .sources(MySpringApplication.class)
+        .build()
+        .run(args);
+}
+----
+
+En revanche, la modification via l'injection va bien modifier la liste des profils de l'environnement, mais n'aura aucun effet sur le chargement des beans et des fichiers de configuration.
+C'est donc une très mauvaise idée de faire ça.
+
+[.left]
+image::/images/forbidden.svg[Forbidden,120]
+
+[source,java,subs="verbatim,quotes"]
+----
+@Component
+public class ProfileAccessor {
+
+    private final ConfigurableEnvironment environment;
+
+    // ...
+
+    public void addActiveProfile(String profile) {
+        environment.addActiveProfile(profile);
+    }
+
+}
+----
+
+=== Test
+
+La mise en place d'un profil de test est un grand classique.
+C'est fait habituellement avec l'annotation `@ActiveProfiles`.
+
+[source,java,subs="verbatim,quotes"]
+----
+*@ActiveProfiles("test")*
+class MyComponentTest {
+    ...
+}
+----
+
+Ça fonctionne bien, mais il y a un défaut.
+Lorsqu'on utilise cette annotation, on n'utilise plus la propriété `spring.profiles.active`, qu'elle soit définie dans le fichier application.yml ou en paramètre de la commande.
+
+Le contournement, c'est d'utiliser un `*ActiveProfileResolver*` maison qui modifie le comportement par défaut.
+Et là comme c'est maison, vous pouvez choisir de donner la priorité à la propriété système ou d'additionner les profils.
+
+[source,java,subs="verbatim,quotes"]
+----
+public class EnhancedActiveProfileResolver 
+        implements *ActiveProfilesResolver* {
+    private DefaultActiveProfilesResolver defaultActiveProfilesResolver = new DefaultActiveProfilesResolver();
+
+    @Override
+    public String[] *resolve(Class<?> testClass)* {
+        return Stream
+            .concat(
+                Stream.of(defaultActiveProfilesResolver.resolve(testClass)),
+                Stream.of(this.getPropertyProfiles())
+            )
+            .toArray(String[]::new);
+    }
+
+    private String[] getPropertyProfiles() {
+        return System.getProperties().containsKey(PROPERTY_KEY)
+                ? System.getProperty(PROPERTY_KEY).split("\\s*,\\s*")
+                : new String[0];
+    }
+}
+----
+
+Cette façon de faire n'est toujours pas parfaite car elle omet les profils définis dans application.yml.
+Mais je ne connais pas de technique pour contourner ça.
+
+== Références
+
+* https://docs.spring.io/spring-framework/docs/current/spring-framework-reference/core.html#beans-definition-profiles[Reference: Bean Definition Profiles]
+* https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Profile.html[JavaDoc: Profile]
+* https://github.com/spring-projects/spring-framework/issues/13622[Issue: Allow overriding @ActiveProfiles]
