@@ -299,6 +299,7 @@ Mais je ne connais pas de technique pour contourner ça.
 
 == Références
 
+* https://gitlab.com/hasalex/spring-example[Exemples de code]
 * https://docs.spring.io/spring-framework/docs/current/spring-framework-reference/core.html#beans-definition-profiles[Reference: Bean Definition Profiles]
 * https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Profile.html[JavaDoc: Profile]
 * https://github.com/spring-projects/spring-framework/issues/13622[Issue: Allow overriding @ActiveProfiles]
