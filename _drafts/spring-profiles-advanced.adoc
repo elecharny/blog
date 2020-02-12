@@ -5,21 +5,50 @@ author: Alexis Hassler
 tags: spring
 ---
 
-=== meta-annotation
+== Profils Spring
+
+Dans mon link:/2020/02/12/spring-profiles.html[article précédent], j'ai fait un récapitulatif sur l'utilisation des profils dans Spring Framework.
+
+Dans ce article-ci, je pose quelques idées pour aller plus loin ou améliorer la lisibilité du code.
+
+=== Meta-annotations
 
 Pour améliorer l'élégance de notre code, on peut aussi faire des méta-annotations.
 
+=== Typage des profils
+
 Dans l'exemple ci-dessous, on crée une annotation qui fusionne les notions de profil et de composant.
-Une classe annotée ainsi ne sera un bean que pour le profil test.
+Une classe annotée ainsi ne sera un bean que pour le profil dev.
 
 [source,java]
 ----
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@Profile("test")
+@Profile("dev")
 @Component
-public @interface TestOnlyComponent {
+public @interface DevOnlyComponent {
   @AliasFor(annotation = Component.class, attribute = "value")
   String value() default "";
 }
 ----
+
+Rem: on peut ajouter des profils avec @Profile("xxx")
+
+=== Ajout automatique du profil test
+
+[source, java, subs="verbatim,quotes"]
+----
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+*@ActiveProfiles(value = "test", resolver = EnhancedActiveProfileResolver.class)*
+*@SpringBootTest*
+public @interface CustomSpringBootTest {
+
+    @AliasFor(annotation = SpringBootTest.class, attribute = "classes")
+    Class<?>[] classes() default {};
+
+    // ...
+}
+----
+
+Rem: on ne peut pas ajouter des profils avec @ActiveProfiles("xxx")
