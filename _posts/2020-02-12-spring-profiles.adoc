@@ -202,7 +202,7 @@ public static void main(String[] args) {
 }
 ----
 
-Cette technique est surtout pratique lorsqu'on utilise une librairie qui exploite les profils.
+La propriété `spring.profiles.include` peut être utilisé pour la même chose et peut être cumulé.
 
 C'est cette notion de profil additionnel qui induit une différence entre la propriété et l'environnement.
 
@@ -300,6 +300,7 @@ Mais je ne connais pas de technique pour contourner ça.
 == Références
 
 * https://gitlab.com/hasalex/spring-example[Exemples de code]
-* https://docs.spring.io/spring-framework/docs/current/spring-framework-reference/core.html#beans-definition-profiles[Reference: Bean Definition Profiles]
+* https://docs.spring.io/spring-framework/docs/current/spring-framework-reference/core.html#beans-definition-profiles[Spring Framework Reference: Bean Definition Profiles]
+* https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-profiles[Spring Boot Reference: Profiles]
 * https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Profile.html[JavaDoc: Profile]
 * https://github.com/spring-projects/spring-framework/issues/13622[Issue: Allow overriding @ActiveProfiles]
