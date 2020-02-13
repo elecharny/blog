@@ -195,10 +195,10 @@ Comme leur nom l'indique, ils viendront en plus de ceux de la propriété.
 ----
 public static void main(String[] args) {
     new SpringApplicationBuilder()
-        .sources(SpringProfileApplication.class)
-        .*profiles("profile-a", "profile-b")*
-        .build()
-        .run(args);
+            .sources(SpringProfileApplication.class)
+            .*profiles("profile-a", "profile-b")*
+            .build()
+            .run(args);
 }
 ----
 
@@ -222,10 +222,10 @@ public static void main(String[] args) {
     *environment.setActiveProfiles("toto", "titi");*
 
     new SpringApplicationBuilder()
-        .*environment(environment)*
-        .sources(MySpringApplication.class)
-        .build()
-        .run(args);
+            .*environment(environment)*
+            .sources(MySpringApplication.class)
+            .build()
+            .run(args);
 }
 ----
 
@@ -274,7 +274,8 @@ Et là comme c'est maison, vous pouvez choisir de donner la priorité à la prop
 ----
 public class EnhancedActiveProfileResolver 
         implements *ActiveProfilesResolver* {
-    private DefaultActiveProfilesResolver defaultActiveProfilesResolver = new DefaultActiveProfilesResolver();
+    private DefaultActiveProfilesResolver defaultActiveProfilesResolver 
+                = new DefaultActiveProfilesResolver();
 
     @Override
     public String[] *resolve(Class<?> testClass)* {
