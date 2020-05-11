@@ -300,7 +300,7 @@ Mais je ne connais pas de technique pour contourner ça.
 
 == Références
 
-* https://gitlab.com/hasalex/spring-example[Exemples de code]
+* https://gitlab.com/bojoblog/spring-example[Exemples de code]
 * https://docs.spring.io/spring-framework/docs/current/spring-framework-reference/core.html#beans-definition-profiles[Spring Framework Reference: Bean Definition Profiles]
 * https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-profiles[Spring Boot Reference: Profiles]
 * https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Profile.html[JavaDoc: Profile]
