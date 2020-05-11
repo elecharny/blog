@@ -1,0 +1,205 @@
+---
+layout: post
+title: Lecture de fichier et consommation mémoire
+author: Alexis Hassler
+tags: 
+icons: font
+---
+
+[.left]
+image::/images/io/file.svg[File, 110]
+
+C'est l'histoire d'une erreur de mémoire comme il en existe tant.
+Sa particularité c'est qu'il suffit d'augmenter la heap pour la résoudre alors que l'erreur ne concerne pas la heap.
+
+OK, j'arrête les mystères.
+Le besoin est de lire des fichiers assez gros (200 à 500 Mo) de façon séquentielle.
+La heap de 1 Go est assez grosse pour charger tout le fichier en mémoire et travailler dessus.
+Malgré la marge de manoeuvre, on a des erreurs OOME qui ressemblent à ça: 
+
+[source, subs="verbatim,quotes"]
+----
+java.lang.*OutOfMemoryError*: Direct buffer memory
+----
+
+Le message associé nous indique que ce n'est pas un problème de heap et pourtant en doublant la heap, l'erreur ne se produit plus.
+
+D'où vient le problème ? Et comment peut-on le résoudre ?
+
+//<!--more-->
+
+== RTFM
+
+Commençons par regarder le code.
+Les fichiers sont chargés en une ligne de code :
+
+[source, subs="verbatim,quotes"]
+----
+byte[] content = Files.readAllBytes(path);
+----
+
+C'est simple et pratique, mais en lisant la javadoc du JDK pour cette méthode on se rend compte que ce n'est pas idéal.
+
+> Note that this method is intended for simple cases where it is convenient to read all bytes into a byte array. 
+It is not intended for reading in large files.
+
+Elle me prévient que je peux avoir des problèmes sans préciser ce qu'est un gros fichier et ni quel problème je peux avoir.
+
+== Direct Buffer Memory
+
+Le message d'erreur nous dit que le problème n'est pas sur la heap, mais sur la _direct buffer memory_.
+
+[source, subs="verbatim,quotes"]
+----
+java.lang.OutOfMemoryError: Direct buffer memory
+    at java.base/java.nio.Bits.reserveMemory(Bits.java:175)
+    at java.base/java.nio.DirectByteBuffer.<init>(DirectByteBuffer.java:118)
+    at ...
+----
+
+Cet espace mémoire sert à accélérer les entrées / sortie.
+On peut y accèder via un `ByteBuffer` ou via `Unsafe` (oui mais ça c'est pas bien).
+Depuis Java 14, il y a aussi une https://openjdk.java.net/jeps/370[API officielle], en incubation, pour remplacer `Unsafe`.
+
+Comme la `heap`, cet espace a une taille maximal qui est fixée par l'option `-XX:MaxDirectMemorySize`.
+Et si cette option n'est pas renseignée, le maximum est fixé à la valeur de `-Xmx`.
+Ça explique pourquoi l'erreur pouvait être résolue en augmentant -Xmx alors que la heap n'était pas concernée.
+
+Evidemment, il aurait été plus judicieux d'augmenter la limite comme ça :
+
+[source, subs="verbatim,quotes"]
+----
+java -Xmx1g *-XX:MaxDirectMemorySize=2g* ...
+----
+
+Si vous utilisez OpenJDK 14, vous aurez la chance d'avoir un message d'erreur plus explicite.
+Celui-ci détaille la quantité de mémoire allouée aux _direct byte buffers_ par rapport à sa taille maximale.
+
+[source.small, subs="verbatim,quotes"]
+----
+java.lang.OutOfMemoryError: Cannot reserve 419430400 bytes of direct buffer memory 
+(*allocated*: 1966088192, *limit*: 2147483648)
+    at java.base/java.nio.Bits.reserveMemory(Bits.java:178)
+    at java.base/java.nio.DirectByteBuffer.<init>(DirectByteBuffer.java:120)
+    at ...
+----
+
+== Direct Buffer Memory et NIO
+
+La méthode `readAllBytes(...)` utilise cette mémoire pour la lecture des fichiers.
+
+[.center]
+image::/images/io/file-read-direct-memory.svg[, 50%]
+
+A la première utilisation, le _buffer_ en mémoire est initialisé à la taille du fichier.
+Aux appels suivants, il est réutilisé et peut être agrandi si nécessaire.
+Donc à tout moment, le _buffer_ fait la taille du plus gros fichier chargé.
+
+*D'où vient le OOME, si on ne dépasse pas la taille d'un fichier ?*
+
+Bien que séquentiels, nos chargements de fichiers se font sur un _pool_ de _threads_.
+Or pour chaque _thread_, NIO utilise _buffer_ différent.
+Donc la taille de l'espace alloué aux _direct byte buffers_ est `nb threads x taille max des fichiers`.
+
+[.center]
+image::/images/io/colored-threads.jpeg[, 90%]
+
+*Plus on a de threads dans le pool, plus les _direct byte buffers_ consomment de la mémoire.*
+
+== Quelles solutions (sans augmenter la mémoire) ?
+
+Puisque la lecture se fait de façon séquentielle, il n'y a aucune valeur ajoutée à utiliser plusieurs _threads_ dans un _pool_.
+La première solution que j'ai envisagée c'est de passer la lecture de fichier sur un seul _thread_.
+Et ça marche.
+
+Mais j'ai quand même voulu explorer d'autres solutions :
+
+* utiliser un InputStream,
+* utiliser NIO plus finement.
+
+== Utiliser un InputStream
+
+Puisque le problème vient de NIO, j'ai voulu tester l'utilisation de l'antique API IO, avec un `InputStream`.
+Le code n'est pas tellement plus compliqué, en utilisant la méthode `newInputStream(...)` de `Files`.
+
+[source, subs="verbatim,quotes"]
+----
+public static byte[] customReadAllBytes(Path path) {}
+    try (InputStream inputStream = Files.newInputStream(path)) {
+        return inputStream.readAllBytes();
+    }
+}
+----
+
+Pour charger le fichier en mémoire, l'InputStream n'utilise pas de _direct byte buffers_.
+Le problème est résolu _de facto_.
+La contrepartie c'est qu'il est plus lent.
+
+== Utiliser NIO plus finement
+
+En récupérant le fichier en plusieurs fois, via un _buffer_ de petite taille on peut largement limiter la quantité de mémoire nécessaire.
+
+[source, subs="verbatim,quotes"]
+----
+public static byte[] customReadAllBytes(Path path) {
+    int size = (int) path.toFile().length();
+    int bufferSize = 64 * 1024;
+
+    try (FileChannel channel = *FileChannel.open(path)*) {
+        byte[] result = new byte[size];
+
+        ByteBuffer buffer = *ByteBuffer.allocate(bufferSize)*;
+
+        int position = 0;
+        while (position < size) {
+            channel.read(buffer, position);
+            buffer.flip();
+            System.arraycopy(
+                buffer.array(), 
+                0, 
+                result, 
+                position, 
+                min(bufferSize, size - position)
+            );
+            position += bufferSize;
+        }
+        return result;
+    }
+}
+----
+
+Le code est nettement plus compliqué. 
+Mais en l'isolant dans une méthode utilitaire ça ne pose pas vraiment de problème.
+
+Avec cette façon de faire, la consommation de mémoire pour _direct byte buffers_ sera limitée à 64 ko par thread.
+J'ai choisi un _buffer_ de 64 ko parce que c'est la valeur qui donne les meilleures performances dans mon cas.
+
+Il existe une variante encore un peu plus rapide, en remplaçant `FileChannel` par `AsynchronousFileChannel`.
+Mais comme il faut gérer la resynchronisation des tâches asynchrones, ça rend le code encore un peu plus compliqué.
+
+== En résumé
+
+La lecture de gros fichiers avec la méthode `Files.readAllBytes(...)` pose des problèmes de mémoire.
+C'est même annoncé dans la JavaDoc.
+La surprise, c'est que ça pose plus de problème sur la *mémoire pour _buffers_ directs* que sur la *heap*.
+
+Pour éviter ce problème, on peut utiliser un `InputStream`, qui n'utilise pas de mémoire pour _buffers_ directs, mais ça risque d'être moins performant.
+
+Finalement, le meilleur compromis est d'utiliser un *`FileChannel`* avec un _buffer_ de petite taille (64 ko).
+C'est ce qui apporte les meilleures performances, avec une faible consommation de mémoire pour _buffers_ directs.
+Il faut juste un peu plus de code pour y arriver.
+
+[TIP]
+====
+Quand j'assène des certitudes sur les performances, ne me croyez pas.
+La seule certitude en performances, c'est qu'il faut tester et mesurer.
+
+Alors *testez et mesurez*.
+====
+
+== Liens
+
+* https://gitlab.com/bojoblog/java-examples/-/tree/master/nio-example[Exemples de code], 
+et la variante https://gitlab.com/bojoblog/java-examples/-/tree/java14/nio-example[Java 14 avec des _records_]
+* Résultats de mes tests de performances (bientôt)
+* https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/nio/file/Files.html[Files JavaDoc]
