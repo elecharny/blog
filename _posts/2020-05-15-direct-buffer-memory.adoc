@@ -2,14 +2,14 @@
 layout: post
 title: Lecture de fichier et consommation mémoire
 author: Alexis Hassler
-tags: 
+tags: java, file, memory
 icons: font
 ---
 
 [.left]
 image::/images/io/file.svg[File, 110]
 
-C'est l'histoire d'une erreur de mémoire comme il en existe tant.
+C'est l'histoire d'une erreur de mémoire comme il en existe tant dans les applications *Java*.
 Sa particularité c'est qu'il suffit d'augmenter la heap pour la résoudre alors que l'erreur ne concerne pas la heap.
 
 OK, j'arrête les mystères.
@@ -201,5 +201,5 @@ Alors *testez et mesurez*.
 
 * https://gitlab.com/bojoblog/java-examples/-/tree/master/nio-example[Exemples de code], 
 et la variante https://gitlab.com/bojoblog/java-examples/-/tree/java14/nio-example[Java 14 avec des _records_]
-* Résultats de mes tests de performances (bientôt)
+* link:/2020/05/18/read-file-perf.html[Résultats de mes tests de performances]
 * https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/nio/file/Files.html[Files JavaDoc]

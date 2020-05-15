@@ -1,0 +1,135 @@
+---
+layout: post
+title: Lecture de fichier et performances
+author: Alexis Hassler
+tags: java, file, performance
+---
+
+[.left]
+image::/images/io/file.svg[File, 110]
+
+Dans le link:/2020/05/15/direct-buffer-memory.html[billet précédent], j'ai présenté plusieurs façons de lire des gros fichiers en *Java*, en me focalisant sur la consommation en mémoire pour _buffers_ directs.
+J'y ai ajouté quelques vagues considérations de performances.
+
+Je présente ici quelques données chiffrées sur ces comparaisons de performances.
+
+//<!--more-->
+
+== Tests
+
+Je compare plusieurs façons de lire des gros fichiers :
+
+* `Files.readAllBytes(path)`
+* `InputStream`
+* `FileChannel` avec un petit buffer
+* `AsyncFileChannel` avec un petit buffer
+* `RandomAccessFile`
+* `FileChannel` avec un `mapped byte buffer`
+
+Avant de commencer les tests, j'ai créé 10 fichiers dont la taille est comprise entre 250 et 500 Mo.
+
+Pour chaque test, je lis les 10 fichiers de façon séquentielle et je boucle plusieurs fois sur cette séquence.
+Le nombre de boucles est paramétrable ; je le fais varier en 5 et 50.
+
+La mémoire allouée est suffisante pour tous les tests.
+
+J'ai réalisés ces tests sur 2 machines différentes:
+
+* Linux n°1: Intel® Core™ i7-6820HQ @ 2.70GHz
+* Linux n°2: Intel® Core™ i7-2600K @ 3.40GHz
+
+Toutes deux ont le même nombre de coeurs (4 HT), ont un disque SSD et tournent sur Ubuntu 18.04.
+La machine n°2 est nettement plus ancienne (2011 contre 2016).
+
+Sur la Linux n°1, j'ai fait des tests en Java 11, 14 et 8.
+Sur la Linux n°2, je me suis contenté de tester avec Java 11.
+
+== Résultats
+
+Les tableaux ci-dessous présentent les temps moyen de lecture d'un fichier dans les 4 modes.
+Le pourcentage dans la colonne de droite est l'écart par rapport à l'environnement de référence (Linux n°1 - Java 11).
+
+[format=csv, cols="2,>1,>1", width="50%"]
+.*Linux n°1 - OpenJDK 11* (référence)
+|===
+read_all_bytes,140 ms,
+input_stream,231 ms,
+file_channel,111 ms,
+async_file_channel,85 ms,{nbsp}
+random_access_file, 190 ms, 
+mapped_buffer, 94 ms,
+|===
+
+[format=csv, cols="2,>1,>1", width="50%"]
+.*Linux n°1 - OpenJDK 14*
+|===
+read_all_bytes,157 ms,+14%
+input_stream,261 ms,+13%
+file_channel,120 ms,+12%
+async_file_channel,103 ms,+20%
+|===
+
+[format=csv, cols="2,>1,>1", width="50%"]
+.*Linux n°1 - OpenJDK 8*
+|===
+read_all_bytes, 162 ms, +17%
+input_stream, 321 ms, +40%
+file_channel, 116 ms, +9%
+async_file_channel, 167 ms,+93%
+|===
+
+[format=csv, cols="2,>1,>1", width="50%"]
+.*Linux n°1 - OpenJ9 11*
+|===
+read_all_bytes, 134 ms, -4%
+input_stream, 330 ms, +43%
+file_channel, 106 ms, -5%
+async_file_channel, 88 ms, +4%
+|===
+
+[format=csv, cols="2,>1,>1", width="50%"]
+.*Linux n°2 - OpenJDK 11*
+|===
+read_all_bytes, 173 ms, +25%
+input_stream, 249 ms, +8%
+file_channel, 137 ms, +28%
+async_file_channel, 151 ms,+75%
+|===
+
+[format=csv, cols="2,>1,>1", width="50%"]
+.*Linux n°2 - OpenJ9 11*
+|===
+read_all_bytes, 153 ms, +11%
+input_stream, 300 ms, +30%
+file_channel, 117 ms, +10%
+async_file_channel, 140 ms, +63%
+|===
+
+
+== Analyse
+
+Ma démarche n'a peut-être pas la même rigueur qu'une étude clinique menée par un professeur marseillais, 
+mais les résultats sont suffisamment homogènes pour tirer des conclusions.
+
+La variante la plus lente est systématiquement et assez nettement `InputStream`.
+C'est la preuve que NIO a bien apporté des améliorations avec l'usage des _direct byte buffers_.
+
+Il est suivi de `Files.readAllBytes(path)`, qui est relativement lent malgré la quantité de mémoire allouée.
+
+Les variantes les plus efficaces sont `FileChannel` et `AsyncFileChannel`. 
+L'écart entre les deux est assez faible (10%) et l'ordre dépend de la machine de test.
+L'excès de complexité amené par la variante asynchrone n'est donc pas rentable dans mon exemple.
+
+Le vainqueur est donc *`FileChannel`*, avec un buffer de 64 ko.
+
+== Liens
+
+* link:/2020/05/15/direct-buffer-memory.html[Article précédent : "Lecture de fichier et consommation mémoire"]
+* https://gitlab.com/bojoblog/java-examples/-/tree/master/nio-example[Code de test, avec les résultats détaillés]
+
+[NOTE]
+====
+Edit:
+
+* 18/05/2020: ajout de MappedByteBuffer (et RandomAccessFile) dans certains tests, suggéré par https://twitter.com/elecharny_tek[E. Lecharny]
+====
