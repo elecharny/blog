@@ -1,0 +1,203 @@
+---
+layout: post
+title: Lecture de gros fichier avec Vert.x
+author: Alexis Hassler
+tags: java, file, performance, vertx
+---
+
+[.left]
+image::/images/vertx/file-vertx.svg[File, 110]
+
+Dans link:/2020/05/15/direct-buffer-memory.html[mon billet de mai], je racontais l'histoire de la _OutOfMemmoryError_ avec la _direct buffer memory_, en utilisant la méthode `Files.readAllBytes(path)` et un _pool_ de _threads_.
+En réalité, le problème ne s'était pas posé en utilisant directement ces éléments, mais indirectement dans https://vertx.io[*Vert.x*].
+
+Dans ce billet-ci, je vais reprendre l'histoire en la replaçant dans son contexte original : du Vert.x et des gros fichiers.
+
+[NOTE.tldr.center]
+====
+Vert.x n'est pas fait pour ça mais on y arrive quand même.
+====
+
+//<!--more-->
+
+== Vert.x et les fichiers
+
+Pour lire tout le contenu d'un fichier, ça ressemble beaucoup à `Files.readAllBytes(path)`, mais avec un callback, dans le style classique de Vert.x.
+
+[source, subs="verbatim,quotes"]
+----
+vertx.fileSystem()
+     .*readFile*(
+        path, 
+        ar -> {
+            if (ar.succeeded()) {
+                *Buffer result* = ar.result();
+                ...
+            } else {
+                ...
+            }
+        });
+----
+
+La variante bloquante lui ressemble encore plus.
+
+[source, subs="verbatim,quotes"]
+----
+*Buffer result* = vertx.fileSystem()
+                     .*readFileBlocking*(path);
+----
+
+En regardant le code de Vert.x, on voit que c'est `Files.readAllBytes(path)` qui est utilisé.
+On devrait donc rencontrer les mêmes problèmes concernant la _direct buffer memory_.
+
+Effectivement, la lecture séquentielle de plusieurs fichiers déclenche une `OutOfMemoryError`.
+
+[source, subs="verbatim,quotes"]
+----
+java.lang.OutOfMemoryError: Direct buffer memory
+    at ...
+    at java.base/java.nio.ByteBuffer.allocateDirect(ByteBuffer.java:317)
+    at ...
+    at java.base/java.nio.file.Files.readAllBytes(Files.java:3212)
+    at io.vertx.core.file.impl.FileSystemImpl$16.perform(FileSystemImpl.java:865)
+    at ...
+----
+
+Du moins c'est le cas quand on utilise la variante non bloquante.
+Les essais avec la variante bloquante fonctionnent mieux, à ceci près qu'on ne respectait pas la link:/2017/05/18/vertx-debug.html[règle d'or de Vert.x].
+
+[quote.big]
+____
+Don't block the event loop.
+____
+
+== Vert.x et les threads
+
+Dans mon billet précédent, je créais moi-même un _pool_ de _threads_ que j'utilisais pour lire les fichiers.
+Dans Vert.x, je ne gère pas les _threads_ mais j'utilise ceux qui sont fournis dans la boite l'outil.
+Je vais donc essayer de récapituler les _threads_ en jeu dans Vert.x.
+
+*Event loop*
+
+L'event loop joue un rôle central.
+Dans cette boucle, on retrouve des événements d'entrées / sortie, de cycle de vie des _verticles_ et de _callback_.
+Chaque boucle s'éxécute sur un _thread_ dédié qui ne doit jamais être bloqué.
+
+[.center]
+image::/images/vertx/event-loop.svg["Vert.x event loop", 60%]
+
+Par défaut, Vert.x démarre deux fois plus de _threads_ que de processeurs détectés.
+
+*Worker pool*
+
+Lorsqu'on doit exécuter du code bloquant, il faut le faire dans un _thread_ de type _worker_.
+
+[source, subs="verbatim,quotes"]
+----
+vertx.executeBlocking(
+    promise -> <some blocking code>, 
+    resultHandler
+);
+----
+
+Le _pool_ de _worker threads_ est géré par un `ThreadPoolExecutor` à 20 _threads_ et il est possible de créer d'autres _worker pools_.
+
+*Internal blocking pool*
+
+C'est l'équivalent du _worker pool_, pour les actions bloquantes internes à Vert.x.
+C'est un _thread_ de ce _pool_ qui est utilisé par la méthode `readFile()`.
+
+C'est un `FixedThreadPool` à 20 _threads_.
+
+
+Donc le problème de _OOME_ se produit parce qu'on veut initialiser des gros _buffers_ d'octets avec une vingtaine de _threads_.
+La variante bloquante ne fait pas de _OOME_ parce que tout se passe dans un unique _thread_, celui du _verticle_.
+Mais c'est une mauvaise solution puisqu'on bloque l'event loop.
+
+== Réduire le nombre de threads
+
+Puisqu'on ne peut ni exécuter du code bloquant ni laisser Vert.x utiliser son _internal blocking pool_, il faut chercher d'autres pistes.
+
+En utilisant une option énoncée ci-dessus, on peut exécuter du code bloquant dans un _worker thread pool_ maison, de petite taille.
+Ça permet d'exécuter le code de lecture dans un contexte compatible avec sa nature bloquante, tout en réduisant le nombre de _buffers_.
+
+[source, subs="verbatim,quotes"]
+----
+WorkerExecutor executor = vertx.*createSharedWorkerExecutor*("read-file", *1*);
+executor.executeBlocking(
+    promise -> <some blocking code>, 
+    resultHandler
+);
+----
+
+Ceci dit, la meilleure solution est probablement de lire le fichier en plusieurs morceaux, ce qui évitera d'allouer un gros buffer.
+
+== Lecture en morceaux
+
+Dans Vert.x, on peut lire un fichier par petits morceaux.
+Grâce à la méthode `open(...)`, on ouvre le fichier puis on lit les morceaux dans un _handler_.
+
+[source, subs="verbatim,quotes"]
+----
+Buffer result = Buffer.buffer(fileSize);
+vertx.fileSystem()
+     .*open*(
+        path,
+        new OpenOptions().setRead(true),
+        ar -> {
+            if (ar.succeeded()) {
+                AsyncFile file = ar.result().setReadBufferSize(64 * 1024);
+                file.*handler*(result::appendBuffer)
+                    .endHandler(nothing -> ...)
+                    .exceptionHandler(throwable -> ...);
+            } else {
+                ...
+            }
+        });
+----
+
+Le problème c'est que cette façon de faire est peu performante.
+Dans mes essais, c'est en moyenne 50% plus lent que la lecture en un bloc.
+
+== NIO dans un worker _thread_
+
+Peut-être que la bonne solution, c'est d'utiliser directement l'API NIO du JDK, et comme c'est une API bloquante, on l'utilise dans un `executeBlocking(...)`.
+On peut reprendre la méthode qui utilise un `FileChannel`, dans le link:/2020/05/15/direct-buffer-memory.html[billet précédent].
+
+[source, subs="verbatim,quotes"]
+----
+vertx.executeBlocking(promise -> {
+        try {
+            promise.complete(*readWithFileChannel(path)*);
+        } catch (Exception e) {
+            promise.fail(e);
+        }
+    }
+);
+----
+
+Cette méthode fonctionne bien et fournit les meilleures performances.
+
+== Conclusion
+
+Si on revient sur les 3 essais, 
+
+* le premier aboutit des _OOME_ (_OutOfMemoryError_),
+* le deuxième évite ces erreurs mais est lent,
+* le troisième est le plus performant, sans utiliser les API de Vert.x.
+
+Que faut-il en conclure ?
+Que les API de Vert.x sont mauvaises pour lire des gros fichiers ?
+
+En fait, je crois que j'ai mal utilisé Vert.x.
+Sa valeur ajoutée, c'est sa capacité à gérer des flux, en entrée et en sortie, en utilisant les mécanismes de link:/2020/03/09/back-pressure.html[_back pressure_].
+Or ici, on ne fait pas de flux, mais on charge tout en mémoire.
+Dans ces conditions, il n'est pas choquant de contourner les API de Vert.x pour y arriver malgré tout.
+
+Je reviendrai sur un meilleur cas d'usage des API de Vert.x dans un prochain billet.
+
+== Liens
+
+* https://vertx.io/docs/vertx-core/java/#_using_the_file_system_with_vert_x[Vert.x documentation: Using the file system with Vert.x]
+* link:/2020/05/15/direct-buffer-memory.html[Billet précédent : "Lecture de fichier et consommation mémoire"]
+* https://gitlab.com/bojoblog/vertx-examples/-/tree/master/read-file[Code source de mes essais]

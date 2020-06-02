@@ -218,7 +218,6 @@ pre {
     max-width: 80%;
     display: block;
   }
-
 }
 
 
@@ -275,3 +274,30 @@ th.halign-center, td.halign-center {
 th.valign-top, td.valign-top {
   vertical-align: top;
 }
+
+
+// Custom admonition
+.admonitionblock {
+  margin: 20px 0;
+}
+.admonitionblock.tldr td.icon [class^="fa icon-"] {
+  font-size: 1.5em;
+}
+.admonitionblock.tldr td.icon .icon-note::before {
+  content: "tl;dr";
+  color: #19407c;
+}
+.admonitionblock.center {
+  table {
+    margin: 0 auto;
+    max-width: 100%;
+  }
+}
+
+
+.big {
+  blockquote {
+    font-size: 24px;
+  }
+}
+
