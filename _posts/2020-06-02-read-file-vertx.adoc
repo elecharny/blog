@@ -194,7 +194,7 @@ Sa valeur ajoutée, c'est sa capacité à gérer des flux, en entrée et en sort
 Or ici, on ne fait pas de flux, mais on charge tout en mémoire.
 Dans ces conditions, il n'est pas choquant de contourner les API de Vert.x pour y arriver malgré tout.
 
-Je reviendrai sur un meilleur cas d'usage des API de Vert.x dans un prochain billet.
+Je reviendrai sur un meilleur cas d'usage des API de Vert.x dans un link:/2020/06/11/vertx-back-pressure.html[prochain billet].
 
 == Liens
 

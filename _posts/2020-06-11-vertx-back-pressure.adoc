@@ -1,0 +1,234 @@
+---
+layout: post
+title: Exemple de back-pressure avec Vert.x
+author: Alexis Hassler
+tags: wiki
+---
+
+[.right]
+image::/images/rx/fluid-back-pressure-regulator.jpg[back pressure valve, 120]
+
+Dans le billet de link:/2020/06/02/read-file-vertx.html[début juin], je montrais les difficultés à charger un gros fichier en mémoire en utilisant les APIs de Vert.x.
+En conclusion, ces APIs n'étaient pas faite pour ça, mais pour gérer des flux.
+
+Aujourd'hui, je vais me placer dans un cas de flux.
+Plutôt que de charger le fichier, je vais voir comment Vert.x peut le servir en téléchargement.
+Et pour voir l'efficacité, on va essayer de faire ça avec le mimimum de mémoire, de l'ordre de quelques Mo.
+
+//<!--more-->
+
+== Téléchargement de fichier
+
+Dans cet exemple, on démarre un serveur Web qui permet de télécharger des fichiers présents sur le disque dur de la machine.
+Pour chaque requête, on va demander à Vert.x de lire un fichier et de l'envoyer dans la réponse HTTP.
+
+[.center]
+image::/images/vertx/file-download.svg[File download, 60%]
+
+On jette un petit coup d'oeil à la documentation pour savoir comment démarrer le https://vertx.io/docs/vertx-core/java/#_writing_http_servers_and_clients[serveur Web].
+
+[source, subs="verbatim,quotes"]
+----
+vertx.createHttpServer()
+     .requestHandler(this::download)
+     .listen(8000);
+----
+
+Il reste à implémenter la méthode download, où on va lire le fichier sur le disque et l'envoyer dans la réponse HTTP.
+
+== Lecture complète du fichier
+
+La technique bourrin consiste à charger tout le fichier en mémoire et à l'envoyer dans la réponse HTTP.
+
+[.center]
+image::/images/vertx/file-download-full.svg[File download, 60%]
+
+[source, subs="verbatim,quotes"]
+----
+vertx.fileSystem()
+     .*readFile*(
+         path,
+         ar -> response.*end*(ar.result());
+      );
+----
+
+[NOTE]
+====
+Le code est simplifié à l'extrème. 
+J'ai retiré les détails et les cas d'erreur pour ne présenter que l'essentiel.
+
+Ce sera aussi le cas pour les exemples suivants.
+====
+
+Ça fonctionne, à condition d'avoir suffisamment de mémoire.
+Dans mes tests, il faut environs 500 Mo de mémoire _heap_ pour un fichier de 250 Mo.
+Et c'est sans compter la consommation de _direct buffer memory_, puisque `readFile(...)` fait appel à `Files.readAllBytes(path)`.
+Pour plus de détail, je vous renvoie vers les billets sur link:/2020/06/02/read-file-vertx.html[la lecture de fichier avec Vert.x] et link:/2020/05/15/direct-buffer-memory.html[la lecture de fichier avec l'API NIO du JDK].
+
+Evidemment, ça n'est pas satisfaisant pour mon cas.
+Avec des gros fichiers, il faut un peu plus de finesse.
+
+== Envoi du fichier par morceaux
+
+La solution plus douce est de charger le fichier par morceaux et d'envoyer les morceaux au fur et à mesure.
+Pour charger un fichier par morceaux, on l'ouvre avec `vertx.fileSystem().open(...)`.
+Puis dans le handler, on lit les morceaux de fichier avec `file.handler(...)`.
+
+[.center]
+image::/images/vertx/file-download-chunk.svg[File download, 60%]
+
+Pour envoyer le fichier morceau par morceau, on utilise la technique de https://fr.wikipedia.org/wiki/Chunked_transfer_encoding[_Chunk Transfer Encoding_] du protocole HTTP.
+
+[source, subs="verbatim,quotes"]
+----
+vertx.fileSystem()
+     .*open*(
+        path,
+        new OpenOptions().setRead(true),
+        ar -> {
+            AsyncFile file = ar.result();
+            response.setStatusCode(200)
+                    .setChunked(true);
+            file.*handler*(buffer -> response.write(buffer))
+                .*endHandler*(nothing -> response.end());
+        }
+      );
+----
+
+Et là, ça change tout.
+Pour télécharger le même fichier de 250 Mo, Vert.x a besoin de moins que 8 Mo.
+Je n'ai pas testé en dessous, ce serait chipoter.
+
+Pour tester ça, j'ai utilisé curl, en local.
+Evidemment, dans ces conditions, ça va très vite.
+Comment ça se comporte avec un client plus lent ?
+
+[source, subs="verbatim,quotes"]
+----
+curl http://localhost:8000/0 --limit-rate 10m --output /tmp/response-0.bin
+----
+
+Et là, *_OutOfMemoryError_*.
+Ou parfois _VertxException_ (`Connection was closed`).
+
+[.center]
+image::/images/common/badaboum.jpg[Badaboum, 250]
+
+Cette erreur est due au fait que la production de morceaux est plus rapide que leur consommation.
+De ce fait, on a une accumulation des _chunks_ au niveau du serveur Web.
+
+Ce symptôme est celui d'un excès de _front pressure_.
+
+== Morceaux en pression avale
+
+Pour éviter l'accumulation, il faut de la link:/2020/03/09/back-pressure.html[_back pressure_], ou pression avale en français.
+Vert.x le fait avec des méthodes de pause et les notions de file d'écriture et de drainage.
+
+Si on constate une accumulation d'éléments, on peut mettre la lecture en pause et la reprendre, en flux ou par paquets, quand la situation est rééquilibrée.
+C'est applicable pour tous les objets de type `ReadStream<T>` : `AsyncFile`, `HttpServerRequest`, `WebSocket`,...
+
+[.center]
+image::/images/vertx/uml-readstream.svg[ReadStream interface, , 150px]
+
+Il y a accumulation lorsque la file d'écriture est pleine.
+Et l'événement de remise à l'équilibre est appelé drainage.
+C'est applicable pour tous les objets de type `WriteStream<T>` : `AsyncFile`, `HttpServerResponse`, `WebSocket`,...
+
+[.center]
+image::/images/vertx/uml-writestream.svg[WriteStream interface, , 150px]
+
+Pour notre cas, l'objet de lecture est un *`AsyncFile`* et l'objet d'écriture est une *`HttpServerResponse`*.
+On met la lecture en pause quand la file d'écriture de la réponse arrive à saturation.
+Après avoir mis la lecture en pause, il faut la reprendre quand la réponse sera drainée.
+
+[source, subs="verbatim,quotes"]
+----
+if (response.writeQueueFull()) {
+    file.pause();
+    response.drainHandler(nothing -> file.resume());
+}
+----
+
+Avec ce dispositif, ça marche quelle que soit le débit du client.
+
+Ça marche aussi avec requêtes concummitentes. 
+J'ai testé jusqu'à 100 téléchargements en parallèle, et ça passe bien, toujours avec 8 Mo de Heap.
+
+Le code devient un peu plus complexe, même dans sa version simplifiée. 
+
+[source, subs="verbatim,quotes"]
+----
+vertx.fileSystem()
+     .open(
+        path,
+        new OpenOptions().setRead(true),
+        ar -> {
+            AsyncFile file = ar.result();
+            response.setStatusCode(200)
+                    .setChunked(true);
+            file.handler(buffer -> {
+                    response.write(buffer);
+                    if (response.*writeQueueFull*()) {
+                        file.*pause*();
+                        response.*drainHandler*(nothing -> file.resume());
+                    }
+                 })
+                .endHandler(nothing -> response.end());
+        }
+      );
+----
+
+A ça il faut évidemment ajouter les traitements d'erreur.
+Donc oui, ça marche bien mais avec un code qui est de moins en moins lisible.
+
+[NOTE]
+====
+Vert.x existait avant Java 8.
+Je vous laisse faire l'exercice de migration de ce code sans lambda.
+Vous me raconterez (sur https://twitter.com/AlexisHassler[teuteur]) ce que ça donne en lisibilité de code.
+====
+
+== Morceaux en tube
+
+Lorsqu'il n'y a aucune transformation à faire entre la lecture et l'écriture, Vert.x propose une solution qui simplifie le code.
+Dans les anciennes versions, c'était à base de pompe, maintenant c'est à base de tuyau.
+
+[.center]
+image::/images/vertx/uml-pipe.svg[Pipe interface, , 150px]
+
+Dans notre exemple, la simplification est assez impressionnante.
+
+[source, subs="verbatim,quotes"]
+----
+vertx.fileSystem()
+     .open(path,
+           new OpenOptions().setRead(true),
+           ar -> ar.result().*pipeTo*(response));
+----
+
+== Conclusion
+
+Dans le billet sur la lecture de gros fichier, Vert.x n'était pas vraiment à son avantage et pour cause, on lui faisait faire des opérations contre sa nature.
+
+Ici, avec les flux en lecture et écriture, c'est tout le contraire. 
+On arrive à une solution très *peu gourmande* en mémoire et particulièrement *robuste* grâce à l'implémentation de _*back pressure*_ dans Vert.x.
+
+Si vous voulez un exemple plus élaboré de  _back pressure_ avec Vert.x, je vous invite à lire le livre de https://twitter.com/jponge[Julien Ponge], https://livebook.manning.com/book/vertx-in-action[Vert.x in action].
+
+== Post-scriptum
+
+Bon, si je n'avais pas interrompu ma lecture de https://vertx.io/docs/vertx-core/java/#_serving_files_directly_from_disk_or_the_classpath[la doc], j'aurais lu que pour télécharger un gros fichier, Vert.x fournit une méthode `response.sendFile(...)` performante et peu consommatrice.
+
+[source, subs="verbatim,quotes"]
+----
+request.response()
+       .sendFile(path.toString());
+----
+
+Ça passe niquel avec 8 Mo, même pour les 100 requêtes parallèles.
+
+En réalité, cette implémentation ne m'intéressait pas ici parce que je voulais avant tout illustrer la façon dont Vert.x implémente la _back pressure_.
+
+== Références
+* https://vertx.io/docs/vertx-core/java/[Documentation de Vert.x core]
+* https://gitlab.com/bojoblog/vertx-examples/-/tree/master/back-pressure[Exemples de code]
