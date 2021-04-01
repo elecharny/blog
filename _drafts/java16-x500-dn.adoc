@@ -18,7 +18,7 @@ Comme je me suis fait avoir avec ces méthodes dans un projet récent, je vais v
 
 == Lire un Certificat
 
-Dans le projet en question, l'utilisateur peut téléverser un certificat qu'on lit et analyse coté serveur et dont on stocke des métadonnées, 
+Dans le projet en question, l'utilisateur peut téléverser un certificat qu'on lit et analyse côté serveur et dont on stocke des métadonnées, 
 en particulier le _Subject DN_ et l'_Issuer DN_.
 
 Pour illustrer le problème, on génère un certificat X.509 avec OpenSSL.
@@ -91,9 +91,13 @@ Et visiblement, je ne suis pas le seul à avoir eu ce problème puisque Java 16 
 == Solution
 
 Le problème vient du fait que l'implémentation de X509Certificate n'est pas la même entre le JDK (X.509) et Bouncy Castle.
-Pour ne pas avoir ce type de problème, il faudrait pas récupérer directement le text ou le principal à partir du certificat, mais passer par un X500Principal.
+Pour ne pas avoir ce type de problème, il ne faudrait pas récupérer directement le text ou le principal à partir du certificat, mais passer par un X500Principal.
 Ensuite on peut extraire le nom en précisant le format.
 3 formats sont supportés Canonical, RFC2253 et RFC1779.
+
+PS: 
+* La RFC 1779 est obsolète, elle correspond à LDAP V2 qui est mort et enterré depuis des années (24 ans exactement)
+* La RFC 2253 est également obsolète depuis 14 ans, mais l'encodage des DN qu'elle précise reste valide.
 
 [source.java, subs="verbatim,quotes"]
 ----
@@ -105,7 +109,7 @@ System.out.println("  Name (RFC1779) :    " + subject.getName(X500Principal.RFC1
 System.out.println("  Name (CANONICAL) :  " + subject.getName(X500Principal.CANONICAL));
 ----
 
-Les résultats montre la sensibilité au format.
+Les résultats montrent la sensibilité au format.
 
 [source, subs="verbatim,quotes"]
 ----
@@ -120,6 +124,8 @@ On constate que `getName()` utilise le format link:https://www.ietf.org/rfc/rfc2
 On constate que `toString()` ressemble au format link:https://www.ietf.org/rfc/rfc1779.txt[RFC-1779] (il peut y avoir des différences sur des certificats plus complexes). +
 On constate que le tout premier résultat ressemblait à du RFC-1779 (pas sûr que ce soit toujours le cas).
 
+PS: En pratique, les différences entre la RFC 1779 et 2253 sont mineures. Tout ce qui est supporté par 1779 est également supporté par 2253. La RFC 4514 qui est aujouurd'hui la norme en vigueur est, elle, plus restrictive. En pratique, un DN va généralement être encodé en respectant la RFC 2253.
+
 == Keycloak
 
 J'ai rencontré ce problème sur un projet qui utilise https://www.keycloak.org/[Keycloak].
@@ -127,7 +133,7 @@ J'ai rencontré ce problème sur un projet qui utilise https://www.keycloak.org/
 L'application utilise l'link:https://www.keycloak.org/docs/latest/server_admin/#_x509[authentification par certificat] avec l'option de correspondance par n° de série et nom distinct de l'émetteur.
 
 De plus, elle crée et configure elle-même les comptes d'utilisateurs via le _keycloak-admin-client_ à partir des certificats téléversés par les utilisateurs.
-Le code ci-dessous sert à créer un nouvelle utilisateur en téléversant un certificat.
+Le code ci-dessous sert à créer un nouvel utilisateur en téléversant un certificat.
 
 [source.java, subs="verbatim,quotes"]
 ----
